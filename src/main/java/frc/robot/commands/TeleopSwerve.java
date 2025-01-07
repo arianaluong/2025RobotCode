@@ -4,13 +4,11 @@
 
 package frc.robot.commands;
 
-import static edu.wpi.first.units.Units.Meter;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import java.util.function.DoubleSupplier;
 
-import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -28,7 +26,8 @@ public class TeleopSwerve extends Command {
   private SwerveRequest.FieldCentric fieldOriented =
       new SwerveRequest.FieldCentric()
           .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective)
-          .withSteerRequestType(DriveRequestType.OpenLoopVoltage);
+          .withSteerRequestType(SteerRequestType.Position);
+          // .withSteerRequestType(DriveRequestType.OpenLoopVoltage);
 
   DoubleSupplier forwardSupplier;
   DoubleSupplier strafeSupplier;
@@ -46,6 +45,7 @@ public class TeleopSwerve extends Command {
     this.forwardSupplier = forwardSupplier;
     this.strafeSupplier = strafeSupplier;
     this.rotationSupplier = rotationSupplier;
+    this.swerve = swerve;
 
     addRequirements(swerve);
   }
