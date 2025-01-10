@@ -4,7 +4,8 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.CANBus.CANBusStatus;
+import edu.wpi.first.hal.can.CANStatus;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
@@ -13,13 +14,12 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.generated.TunerConstants;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
-
-  private CANBus canBus = new CANBus("Cannie");
 
   public Robot() {
     double startTime = Timer.getFPGATimestamp();
@@ -39,14 +39,30 @@ public class Robot extends TimedRobot {
 
     CommandScheduler.getInstance().run();
 
-    SmartDashboard.putNumber("CANivore Utilization %", canBus.getStatus().BusUtilization * 100.0);
+    CANBusStatus canStatus = TunerConstants.kCANBus.getStatus();
+    CANStatus rioCanStatus = RobotController.getCANStatus();
+
+    SmartDashboard.putNumber("CANivore/CAN Utilization %", canStatus.BusUtilization * 100.0);
+    SmartDashboard.putNumber("CANivore/Bus Off Count", canStatus.BusOffCount);
+    SmartDashboard.putNumber("CANivore/Receive Error Count", canStatus.REC);
+    SmartDashboard.putNumber("CANivore/Transmit Error Count", canStatus.TEC);
+    SmartDashboard.putNumber("CANivore/Tx Full Count", canStatus.TxFullCount);
+
     SmartDashboard.putNumber(
-        "RIO CAN Utilization %", RobotController.getCANStatus().percentBusUtilization * 100.0);
+        "RoboRIO/CAN Status/Utilization %", rioCanStatus.percentBusUtilization * 100.0);
+    SmartDashboard.putNumber("RoboRIO/CAN Status/Bus Off Count", rioCanStatus.busOffCount);
+    SmartDashboard.putNumber(
+        "RoboRIO/CAN Status/Receive Error Count", rioCanStatus.receiveErrorCount);
+    SmartDashboard.putNumber(
+        "RoboRIO/CAN Status/Transmit Error Count", rioCanStatus.transmitErrorCount);
+    SmartDashboard.putNumber("RoboRIO/CAN Status/Tx Full Count", rioCanStatus.txFullCount);
+
+    SmartDashboard.putNumber("RoboRIO/CPU Temperature", RobotController.getCPUTemp());
+    SmartDashboard.putBoolean("RoboRIO/RSL", RobotController.getRSLState());
+    SmartDashboard.putNumber("RoboRIO/Input Current", RobotController.getInputCurrent());
+
     SmartDashboard.putNumber("Voltage", RobotController.getBatteryVoltage());
-    SmartDashboard.putNumber("CPU Temperature", RobotController.getCPUTemp());
-    SmartDashboard.putBoolean("RSL", RobotController.getRSLState());
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
-    SmartDashboard.putNumber("Input Current", RobotController.getInputCurrent());
 
     double codeRuntime = (Timer.getFPGATimestamp() - startTime) * 1000.0;
     SmartDashboard.putNumber("Code Runtime (ms)", codeRuntime);
