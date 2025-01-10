@@ -5,7 +5,9 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.config.PIDConstants;
+import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 
@@ -14,8 +16,13 @@ public class Constants {
     public static final LinearVelocity maxTranslationalSpeed = FeetPerSecond.of(15);
     public static final AngularVelocity maxRotationalSpeed = RotationsPerSecond.of(1);
 
-    public static final Time translationZeroToFull = Seconds.of(0.5);
-    public static final Time rotationZeroToFull = Seconds.of(0.5);
+    public static final Time translationZeroToFull = Seconds.of(.5);
+    public static final Time rotationZeroToFull = Seconds.of(0.25);
+
+    public static final LinearAcceleration maxTransationalAcceleration =
+        maxTranslationalSpeed.div(translationZeroToFull);
+    public static final AngularAcceleration maxAngularAcceleration =
+        maxRotationalSpeed.div(rotationZeroToFull);
   }
 
   public static class AutoConstants {

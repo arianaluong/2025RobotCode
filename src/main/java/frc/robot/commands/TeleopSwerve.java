@@ -5,8 +5,9 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -32,17 +33,11 @@ public class TeleopSwerve extends Command {
   private final DoubleSupplier rotationSupplier;
 
   private SlewRateLimiter forwardRateLimiter =
-      new SlewRateLimiter(
-          SwerveConstants.maxTranslationalSpeed.in(MetersPerSecond)
-              / SwerveConstants.translationZeroToFull.in(Seconds));
+      new SlewRateLimiter(SwerveConstants.maxTransationalAcceleration.in(MetersPerSecondPerSecond));
   private SlewRateLimiter strafeRateLimiter =
-      new SlewRateLimiter(
-          SwerveConstants.maxTranslationalSpeed.in(MetersPerSecond)
-              / SwerveConstants.translationZeroToFull.in(Seconds));
+      new SlewRateLimiter(SwerveConstants.maxTransationalAcceleration.in(MetersPerSecondPerSecond));
   private SlewRateLimiter rotationRateLimiter =
-      new SlewRateLimiter(
-          SwerveConstants.maxRotationalSpeed.in(RotationsPerSecond)
-              / SwerveConstants.rotationZeroToFull.in(Seconds));
+      new SlewRateLimiter(SwerveConstants.maxAngularAcceleration.in(RotationsPerSecondPerSecond));
 
   public TeleopSwerve(
       DoubleSupplier forwardSupplier,
@@ -76,7 +71,7 @@ public class TeleopSwerve extends Command {
     strafeSpeed = strafeRateLimiter.calculate(strafeSpeed);
     rotationSpeed = rotationRateLimiter.calculate(rotationSpeed);
 
-    if (Math.hypot(forwardSpeed, strafeSpeed) <= Units.inchesToMeters(1)) {
+    if (Math.hypot(forwardSpeed, strafeSpeed) <= Units.inchesToMeters(0.5)) {
       forwardSpeed = 0;
       strafeSpeed = 0;
 
@@ -84,7 +79,7 @@ public class TeleopSwerve extends Command {
       strafeRateLimiter.reset(0);
     }
 
-    if (Math.abs(rotationSpeed) <= Units.degreesToRadians(1)) {
+    if (Math.abs(rotationSpeed) <= Units.degreesToRadians(.5)) {
       rotationSpeed = 0;
 
       rotationRateLimiter.reset(0);
