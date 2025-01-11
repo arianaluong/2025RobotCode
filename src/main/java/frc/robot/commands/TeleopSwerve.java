@@ -79,7 +79,7 @@ public class TeleopSwerve extends Command {
       strafeRateLimiter.reset(0);
     }
 
-    if (Math.abs(rotationSpeed) <= Units.degreesToRadians(.5)) {
+    if (Math.abs(rotationSpeed) <= Units.degreesToRadians(1.5)) {
       rotationSpeed = 0;
 
       rotationRateLimiter.reset(0);

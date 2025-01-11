@@ -205,7 +205,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           "Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
     }
     PathPlannerLogging.setLogActivePathCallback(
-        poses -> field.getObject("Trajectory").setPoses(poses));
+        poses -> {
+          field.getObject("Trajectory").setPoses(poses);
+
+          if (poses.isEmpty()) {
+            field.getObject("Target Pose").setPoses();
+          }
+        });
     PathPlannerLogging.setLogTargetPoseCallback(
         pose -> field.getObject("Target Pose").setPose(pose));
 

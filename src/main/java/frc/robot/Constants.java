@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.config.PIDConstants;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
@@ -28,5 +30,10 @@ public class Constants {
   public static class AutoConstants {
     public static final PIDConstants translationPID = new PIDConstants(5.0, 0.0, 0.0);
     public static final PIDConstants rotationPID = new PIDConstants(1.0, 0.0, 0.0);
+  }
+
+  public static class FieldConstants {
+    public static AprilTagFieldLayout aprilTagLayout =
+        AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
   }
 }

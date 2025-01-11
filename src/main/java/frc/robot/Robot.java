@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.ctre.phoenix6.CANBus.CANBusStatus;
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.hal.can.CANStatus;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -26,6 +27,8 @@ public class Robot extends TimedRobot {
 
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog());
+
+    SignalLogger.start();
 
     m_robotContainer = new RobotContainer();
 
