@@ -14,13 +14,19 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Indexer;
 
 public class RobotContainer {
+  private Indexer indexer = new Indexer();
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
@@ -28,40 +34,60 @@ public class RobotContainer {
       new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
   private SendableChooser<Command> autoChooser;
 
-  private final CommandXboxController joystick = new CommandXboxController(0);
+  private final CommandXboxController driverController = new CommandXboxController(0);
+  private final CommandJoystick operatorStick = new CommandJoystick(1);
 
   public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
   private final PowerDistribution powerDistribution = new PowerDistribution();
 
   public RobotContainer() {
-    configureBindings();
+    configureDriverBindings();
+    configureOperatorBindings();
     configureAutoChooser();
 
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
+
+    new Trigger(indexer::intakeLaserBroken)
+        .and(RobotModeTriggers.teleop())
+        .whileTrue(Commands.run(() -> indexer.index()))
+        .onFalse(indexer.runOnce(indexer::stopIndexer));
   }
 
-  private void configureBindings() {
+  private void configureDriverBindings() {
     drivetrain.setDefaultCommand(
-        new TeleopSwerve(joystick::getLeftY, joystick::getLeftX, joystick::getRightX, drivetrain));
+        new TeleopSwerve(
+            driverController::getLeftY,
+            driverController::getLeftX,
+            driverController::getRightX,
+            drivetrain));
 
-    joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick
+    driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
+    driverController
         .b()
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
                     point.withModuleDirection(
-                        new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+                        new Rotation2d(
+                            -driverController.getLeftY(), -driverController.getLeftX()))));
 
     // reset the field-centric heading on left bumper press
-    joystick
+    driverController
         .start()
-        .and(joystick.back())
+        .and(driverController.back())
         .onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()).ignoringDisable(true));
 
     drivetrain.registerTelemetry(logger::telemeterize);
+  }
+
+  private void configureOperatorBindings() {
+
+    operatorStick
+        .button(10)
+        .whileTrue(Commands.run(() -> indexer.index()))
+        .onFalse(indexer.runOnce(indexer::stopIndexer));
   }
 
   private void configureAutoChooser() {

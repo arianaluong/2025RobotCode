@@ -36,4 +36,15 @@ public class Constants {
     public static AprilTagFieldLayout aprilTagLayout =
         AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
   }
+
+  public static class IntakeConstants {
+    public static final int mainIntakeMotorID = 20;
+    public static final int armIntakeMotorID = 21;
+    public static final int indexerMotorID = 22;
+
+    public static final int intakeLaserCanID = 14;
+    public static final int outakeLaserCanID = 15;
+
+    public static final double indexerMotorSpeeds = .5;
+  }
 }
