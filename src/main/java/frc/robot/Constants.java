@@ -16,6 +16,7 @@ import edu.wpi.first.units.measure.Time;
 public class Constants {
   public static class SwerveConstants {
     public static final LinearVelocity maxTranslationalSpeed = FeetPerSecond.of(15);
+    public static final LinearVelocity slowModeMaxTranslationalSpeed = FeetPerSecond.of(5);
     public static final AngularVelocity maxRotationalSpeed = RotationsPerSecond.of(1);
 
     public static final Time translationZeroToFull = Seconds.of(.5);
@@ -38,13 +39,19 @@ public class Constants {
   }
 
   public static class IntakeConstants {
-    public static final int mainIntakeMotorID = 20;
+    public static final int groundIntakeMotorID = 20;
     public static final int armIntakeMotorID = 21;
     public static final int indexerMotorID = 22;
 
     public static final int intakeLaserCanID = 14;
     public static final int outakeLaserCanID = 15;
 
-    public static final double indexerMotorSpeeds = .5;
+    public static final double indexerMotorSpeed = .5;
+    public static final double groundIntakeMotorSpeed = .2;
+  }
+
+  public static class OperatorConstants {
+    public static final int indexerButton = 10;
+    public static final int groundIntakeButton = 9;
   }
 }

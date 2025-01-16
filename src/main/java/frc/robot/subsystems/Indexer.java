@@ -6,51 +6,46 @@ package frc.robot.subsystems;
 
 import au.grapplerobotics.LaserCan;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.IntakeConstants;
 
 public class Indexer extends SubsystemBase {
-
   /** Creates a new Indexer. */
-  LaserCan intakeLaser;
+  private LaserCan outakeLaser;
 
-  LaserCan outakeLaser;
-
-  TalonFX indexerMotor = new TalonFX(0, "Cannie");
+  private TalonFX indexerMotor;
 
   public Indexer() {
     outakeLaser = new LaserCan(14);
-    intakeLaser = new LaserCan(15);
+    indexerMotor = new TalonFX(2, "Cannie");
   }
 
-  public boolean outakeLaserBroken() {
-    LaserCan.Measurement measurement = outakeLaser.getMeasurement();
-    if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-      // System.out.println("The target is " + measurement.distance_mm + "mm away!");
-      // if (measurement.distance_mm < 500) {
-      //   return true;
-      // } else {
-      //   return false;
-      // }
-      return true;
-    } else {
-      return false;
-    }
+  public Command runIndexer() {
+    return run(this::index);
   }
 
+  public Command stop() {
+    return runOnce(this::stopIndexer);
+  }
+
+  // public void index() {
+  //   if (!outakeLaserBroken()) {
+  //     indexerMotor.set(IntakeConstants.indexerMotorSpeed);
+  //   } else {
+  //     stopIndexer();
+  //   }
+  // }
   public void index() {
-    if (outakeLaserBroken()) {
-      indexerMotor.set(.2);
-    } else {
-      stopIndexer();
-    }
+    indexerMotor.set(IntakeConstants.indexerMotorSpeed);
   }
 
   public void stopIndexer() {
     indexerMotor.set(0.0);
   }
 
-  public boolean intakeLaserBroken() {
-    LaserCan.Measurement measurement = intakeLaser.getMeasurement();
+  public boolean outakeLaserBroken() {
+    LaserCan.Measurement measurement = outakeLaser.getMeasurement();
     if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
       // System.out.println("The target is " + measurement.distance_mm + "mm away!");
       // if (measurement.distance_mm < 500) {
