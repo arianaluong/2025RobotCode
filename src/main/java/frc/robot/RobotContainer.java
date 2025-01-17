@@ -4,7 +4,7 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -14,54 +14,102 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.GroundIntake;
+import frc.robot.subsystems.Indexer;
+import frc.robot.util.LogUtil;
+import frc.robot.util.PersistentSendableChooser;
 
 public class RobotContainer {
+  private final Indexer indexer = new Indexer();
+  private final GroundIntake groundIntake = new GroundIntake();
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
   private final Telemetry logger =
       new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
+
+  private PersistentSendableChooser<String> batteryChooser;
   private SendableChooser<Command> autoChooser;
 
-  private final CommandXboxController joystick = new CommandXboxController(0);
+  private final CommandXboxController driverController = new CommandXboxController(0);
+  private final CommandJoystick operatorStick = new CommandJoystick(1);
 
   public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
   private final PowerDistribution powerDistribution = new PowerDistribution();
 
+  private Trigger intakeLaserBroken = new Trigger(groundIntake::intakeLaserBroken);
+  private Trigger indexerLaserBroken = new Trigger(indexer::outakeLaserBroken);
+
   public RobotContainer() {
-    configureBindings();
+    configureDriverBindings();
+    configureOperatorBindings();
     configureAutoChooser();
+    configureBatteryChooser();
 
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
+
+    intakeLaserBroken
+        .whileTrue(indexer.run(indexer::index))
+        .onFalse(indexer.runOnce(indexer::stopIndexer));
   }
 
-  private void configureBindings() {
-    drivetrain.setDefaultCommand(
-        new TeleopSwerve(joystick::getLeftY, joystick::getLeftX, joystick::getRightX, drivetrain));
+  private void configureDriverBindings() {
+    Trigger slowMode = driverController.leftTrigger();
 
-    joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick
+    drivetrain.setDefaultCommand(
+        new TeleopSwerve(
+            driverController::getLeftY,
+            driverController::getLeftX,
+            driverController::getRightX,
+            () -> {
+              if (slowMode.getAsBoolean()) {
+                return SwerveConstants.slowModeMaxTranslationalSpeed;
+              }
+              return SwerveConstants.maxTranslationalSpeed;
+            },
+            drivetrain));
+
+    driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
+    driverController
         .b()
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
                     point.withModuleDirection(
-                        new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+                        new Rotation2d(
+                            -driverController.getLeftY(), -driverController.getLeftX()))));
 
     // reset the field-centric heading on left bumper press
-    joystick
+    driverController
         .start()
-        .and(joystick.back())
-        .onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()).ignoringDisable(true));
+        .and(driverController.back())
+        .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
     drivetrain.registerTelemetry(logger::telemeterize);
+  }
+
+  private void configureOperatorBindings() {
+    operatorStick
+        .button(OperatorConstants.indexerButton)
+        .and(intakeLaserBroken.negate())
+        .whileTrue(indexer.runIndexer())
+        .onFalse(indexer.stop());
+
+    operatorStick
+        .button(OperatorConstants.groundIntakeButton)
+        .whileTrue(groundIntake.runIntake())
+        .onFalse(groundIntake.stop());
   }
 
   private void configureAutoChooser() {
@@ -101,6 +149,33 @@ public class RobotContainer {
         "[SysID] Dynamic Rotation Reverse", drivetrain.sysIdDynamicRotation(Direction.kReverse));
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
+  }
+
+  public void configureBatteryChooser() {
+    batteryChooser = new PersistentSendableChooser<>("Battery Number");
+
+    batteryChooser.addOption("2019 #3", "Daniel");
+    batteryChooser.addOption("2020 #2", "Gary");
+    batteryChooser.addOption("2022 #1", "Lenny");
+    batteryChooser.addOption("2024 #1", "Ian");
+    batteryChooser.addOption("2024 #2", "Nancy");
+    batteryChooser.addOption("2024 #3", "Perry");
+    batteryChooser.addOption("2024 #4", "Quincy");
+    batteryChooser.addOption("2024 #5", "Richard");
+    batteryChooser.addOption("2025 #1", "Josh");
+
+    if (batteryChooser.getSelectedName() != null && !batteryChooser.getSelectedName().equals("")) {
+      LogUtil.recordMetadata("Battery Number", batteryChooser.getSelectedName());
+      LogUtil.recordMetadata("Battery Nickname", batteryChooser.getSelected());
+    }
+
+    batteryChooser.onChange(
+        (nickname) -> {
+          LogUtil.recordMetadata("Battery Number", batteryChooser.getSelectedName());
+          LogUtil.recordMetadata("Battery Nickname", nickname);
+        });
+
+    SmartDashboard.putData("Battery Chooser", batteryChooser);
   }
 
   public Command getAutonomousCommand() {

@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import com.pathplanner.lib.config.PIDConstants;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -14,6 +15,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
@@ -25,6 +27,7 @@ import java.nio.file.Paths;
 public class Constants {
   public static class SwerveConstants {
     public static final LinearVelocity maxTranslationalSpeed = FeetPerSecond.of(15);
+    public static final LinearVelocity slowModeMaxTranslationalSpeed = FeetPerSecond.of(5);
     public static final AngularVelocity maxRotationalSpeed = RotationsPerSecond.of(1);
 
     public static final Time translationZeroToFull = Seconds.of(.5);
@@ -55,5 +58,26 @@ public class Constants {
 
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
+  }
+  public static class FieldConstants {
+    public static AprilTagFieldLayout aprilTagLayout =
+        AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+  }
+
+  public static class IntakeConstants {
+    public static final int groundIntakeMotorID = 20;
+    public static final int armIntakeMotorID = 21;
+    public static final int indexerMotorID = 22;
+
+    public static final int intakeLaserCanID = 14;
+    public static final int outakeLaserCanID = 15;
+
+    public static final double indexerMotorSpeed = .5;
+    public static final double groundIntakeMotorSpeed = .2;
+  }
+
+  public static class OperatorConstants {
+    public static final int indexerButton = 10;
+    public static final int groundIntakeButton = 9;
   }
 }
