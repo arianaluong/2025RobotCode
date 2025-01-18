@@ -61,7 +61,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   private final Vision vision = new Vision();
 
-  Field2d field = vision.getSimDebugField();
+  private Field2d field = new Field2d();
 
   /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
   private final SysIdRoutine m_sysIdRoutineTranslation =

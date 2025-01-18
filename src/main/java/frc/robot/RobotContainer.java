@@ -18,17 +18,20 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GroundIntake;
 import frc.robot.subsystems.Indexer;
 import frc.robot.util.LogUtil;
 import frc.robot.util.PersistentSendableChooser;
 
 public class RobotContainer {
+  private final Elevator elevator = new Elevator();
   private final Indexer indexer = new Indexer();
   private final GroundIntake groundIntake = new GroundIntake();
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -66,6 +69,7 @@ public class RobotContainer {
 
   private void configureDriverBindings() {
     Trigger slowMode = driverController.leftTrigger();
+    elevator.setDefaultCommand(elevator.downPosition());
 
     drivetrain.setDefaultCommand(
         new TeleopSwerve(
@@ -110,6 +114,8 @@ public class RobotContainer {
         .button(OperatorConstants.groundIntakeButton)
         .whileTrue(groundIntake.runIntake())
         .onFalse(groundIntake.stop());
+
+    operatorStick.button(1).onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
   }
 
   private void configureAutoChooser() {
