@@ -120,7 +120,7 @@ public class RobotContainer {
         .onFalse(indexer.stop());
 
     operatorStick
-        .button(OperatorConstants.groundIntakeButton) // .and(armDown)
+        .button(OperatorConstants.groundIntakeButton)
         .whileTrue(groundIntake.runIntake())
         .onFalse(groundIntake.stop());
 
@@ -180,6 +180,17 @@ public class RobotContainer {
         "[SysID] Dynamic Rotation Forward", drivetrain.sysIdDynamicRotation(Direction.kForward));
     autoChooser.addOption(
         "[SysID] Dynamic Rotation Reverse", drivetrain.sysIdDynamicRotation(Direction.kReverse));
+
+    autoChooser.addOption(
+        "[SysID] Elevator Quasistatic Forward",
+        elevator.sysIdQuasistaticElevator(Direction.kForward));
+    autoChooser.addOption(
+        "[SysID] Elevator Quasistatic Reverse",
+        elevator.sysIdQuasistaticElevator(Direction.kReverse));
+    autoChooser.addOption(
+        "[SysID] Elevator Dynamic Forward", elevator.sysIdDynamicElevator(Direction.kForward));
+    autoChooser.addOption(
+        "[SysID] Elevator Dynamic Reverse", elevator.sysIdDynamicElevator(Direction.kReverse));
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
   }

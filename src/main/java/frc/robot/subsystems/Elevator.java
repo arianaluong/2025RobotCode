@@ -4,9 +4,14 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Volts;
+
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
@@ -15,6 +20,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ElevatorConstants;
 
 public class Elevator extends SubsystemBase {
@@ -26,6 +32,8 @@ public class Elevator extends SubsystemBase {
   private StatusSignal<Angle> currentPosition;
 
   private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
+  private final VoltageOut voltageRequest = new VoltageOut(0.0);
+
   private DigitalInput buttonSwitch = new DigitalInput(ElevatorConstants.buttonSwitchID);
   private boolean isZeroed = false;
   private boolean isLimitConfigApplied = false;
@@ -81,12 +89,33 @@ public class Elevator extends SubsystemBase {
     return moveToPosition(0.0);
   }
 
+  private final SysIdRoutine elevatorSysIdRoutine =
+      new SysIdRoutine(
+          new SysIdRoutine.Config(
+              Volts.of(0.5).per(Second), // Use default ramp rate (1 V/s)
+              Volts.of(2), // Reduce dynamic step voltage to 4 V to prevent brownout
+              null, // Use default timeout (10 s)
+              // Log state with SignalLogger class
+              state -> SignalLogger.writeString("SysIdElevator_State", state.toString())),
+          new SysIdRoutine.Mechanism(
+              (volts) -> elevatorMainMotor.setControl(voltageRequest.withOutput(volts.in(Volts))),
+              null,
+              this));
+
+  public Command sysIdQuasistaticElevator(SysIdRoutine.Direction direction) {
+    return elevatorSysIdRoutine.quasistatic(direction);
+  }
+
+  public Command sysIdDynamicElevator(SysIdRoutine.Direction direction) {
+    return elevatorSysIdRoutine.dynamic(direction);
+  }
+
   @Override
   public void periodic() {
     printPosition();
 
     if (buttonPressed()) {
-      elevatorMainMotor.setPosition(0);
+      elevatorMainMotor.setPosition(0, 0);
       isZeroed = true;
     }
 
