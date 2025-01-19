@@ -82,7 +82,8 @@ public class Constants {
     public static final int outakeLaserCanID = 15;
 
     public static final double indexerMotorSpeed = .5;
-    public static final double groundIntakeMotorSpeed = .2;
+    public static final double groundIntakeMotorSpeed = .9;
+    public static final double outakeSpeed = -0.9;
   }
 
   public static class ElevatorConstants {
@@ -92,6 +93,7 @@ public class Constants {
 
     public static final int elevatorMainMotorID = 15;
     public static final int elevatorFollowerMotorID = 26;
+    public static final int buttonSwitchID = 23;
 
     public static final double maxHeight = 1.447800;
     public static final double minHeight = 0.0;
@@ -130,10 +132,21 @@ public class Constants {
                 new SoftwareLimitSwitchConfigs()
                     .withForwardSoftLimitThreshold(maxHeight)
                     .withForwardSoftLimitEnable(true));
+
+    public static final SoftwareLimitSwitchConfigs limitSwitchConfigs =
+        new SoftwareLimitSwitchConfigs()
+            .withForwardSoftLimitThreshold(maxHeight)
+            .withForwardSoftLimitEnable(true)
+            .withReverseSoftLimitThreshold(minHeight)
+            .withReverseSoftLimitEnable(true);
   }
 
   public static class OperatorConstants {
     public static final int indexerButton = 10;
     public static final int groundIntakeButton = 9;
+    public static final int L4HeightButton = 8;
+    public static final int homeElevatorButon = 7;
+    public static final int manualOutakeButton = 6;
+    public static final int manualFeedButton = 5;
   }
 }

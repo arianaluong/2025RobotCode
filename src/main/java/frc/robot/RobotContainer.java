@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -51,7 +52,8 @@ public class RobotContainer {
   private final PowerDistribution powerDistribution = new PowerDistribution();
 
   private Trigger intakeLaserBroken = new Trigger(groundIntake::intakeLaserBroken);
-  private Trigger indexerLaserBroken = new Trigger(indexer::outakeLaserBroken);
+  private Trigger outakeLaserBroken = new Trigger(indexer::outakeLaserBroken);
+  private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
 
   public RobotContainer() {
     configureDriverBindings();
@@ -62,14 +64,19 @@ public class RobotContainer {
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
 
+    // intakeLaserBroken
+    //     .whileTrue(indexer.run(indexer::index))
+    //     .onFalse(indexer.runOnce(indexer::stopIndexer));
+
     intakeLaserBroken
-        .whileTrue(indexer.run(indexer::index))
-        .onFalse(indexer.runOnce(indexer::stopIndexer));
+        .whileTrue(indexer.runIndexer())
+        .onFalse(
+            Commands.race(Commands.waitUntil(outakeLaserBroken), Commands.waitSeconds(4))
+                .andThen(indexer::stopIndexer));
   }
 
   private void configureDriverBindings() {
     Trigger slowMode = driverController.leftTrigger();
-    elevator.setDefaultCommand(elevator.downPosition());
 
     drivetrain.setDefaultCommand(
         new TeleopSwerve(
@@ -104,6 +111,8 @@ public class RobotContainer {
   }
 
   private void configureOperatorBindings() {
+    elevator.setDefaultCommand(elevator.downPosition());
+
     operatorStick
         .button(OperatorConstants.indexerButton)
         .and(intakeLaserBroken.negate())
@@ -111,11 +120,29 @@ public class RobotContainer {
         .onFalse(indexer.stop());
 
     operatorStick
-        .button(OperatorConstants.groundIntakeButton)
+        .button(OperatorConstants.groundIntakeButton) // .and(armDown)
         .whileTrue(groundIntake.runIntake())
         .onFalse(groundIntake.stop());
 
-    operatorStick.button(1).onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+    operatorStick
+        .button(OperatorConstants.L4HeightButton)
+        .whileTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+
+    operatorStick
+        .button(OperatorConstants.homeElevatorButon)
+        .whileTrue(elevator.homeElevator())
+        .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
+
+    operatorStick
+        .button(OperatorConstants.manualOutakeButton)
+        .whileTrue(groundIntake.run(groundIntake::manualOutake))
+        .onFalse(groundIntake.stop());
+
+    operatorStick
+        .button(OperatorConstants.manualFeedButton)
+        .and(buttonTrigger)
+        .whileTrue(groundIntake.run(groundIntake::feedToIndexer))
+        .onFalse(groundIntake.stop());
   }
 
   private void configureAutoChooser() {

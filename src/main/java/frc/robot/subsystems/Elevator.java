@@ -4,14 +4,14 @@
 
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Rotations;
-
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -26,6 +26,10 @@ public class Elevator extends SubsystemBase {
   private StatusSignal<Angle> currentPosition;
 
   private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
+  private DigitalInput buttonSwitch = new DigitalInput(ElevatorConstants.buttonSwitchID);
+  private boolean isZeroed = false;
+  private boolean isLimitConfigApplied = false;
+  private Alert elevatorAlert;
 
   public Elevator() {
     elevatorMainMotor = new TalonFX(ElevatorConstants.elevatorMainMotorID, "Cannie");
@@ -40,6 +44,23 @@ public class Elevator extends SubsystemBase {
     elevatorFollowerMotor.setControl(follower);
 
     elevatorMainMotor.getConfigurator().apply(ElevatorConstants.elevatorConfigs);
+
+    elevatorAlert = new Alert("Elevator is not Zeroed!", AlertType.kWarning);
+  }
+
+  public boolean buttonPressed() {
+    return buttonSwitch.get();
+  }
+
+  public Command homeElevator() {
+    return run(() -> setSpeed(-0.1))
+        .until(this::buttonPressed)
+        .unless(this::buttonPressed)
+        .finallyDo(this::stopElevator);
+  }
+
+  public void stopElevator() {
+    elevatorMainMotor.set(0);
   }
 
   public void setSpeed(double speed) {
@@ -52,15 +73,28 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command moveToPosition(double height) {
-    return run(() -> elevatorMainMotor.setControl(motionMagicRequest.withPosition(height)));
+    return run(() -> elevatorMainMotor.setControl(motionMagicRequest.withPosition(height)))
+        .onlyIf(() -> isZeroed);
   }
 
-    public Command downPosition() {
-        return moveToPosition(0.0);
-    }
+  public Command downPosition() {
+    return moveToPosition(0.0);
+  }
 
   @Override
   public void periodic() {
     printPosition();
+
+    if (buttonPressed()) {
+      elevatorMainMotor.setPosition(0);
+      isZeroed = true;
+    }
+
+    elevatorAlert.set(!isZeroed);
+
+    if (isZeroed && !isLimitConfigApplied) {
+      elevatorMainMotor.getConfigurator().apply(ElevatorConstants.limitSwitchConfigs);
+      isLimitConfigApplied = true;
+    }
   }
 }

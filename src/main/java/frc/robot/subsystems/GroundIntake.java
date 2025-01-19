@@ -21,14 +21,6 @@ public class GroundIntake extends SubsystemBase {
     intakeLaser = new LaserCan(0);
   }
 
-  public Command runIntake() {
-    return run(this::groundIntake);
-  }
-
-  public Command stop() {
-    return runOnce(this::stopGroundIntake);
-  }
-
   public boolean intakeLaserBroken() {
     LaserCan.Measurement measurement = intakeLaser.getMeasurement();
     if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
@@ -44,13 +36,10 @@ public class GroundIntake extends SubsystemBase {
     }
   }
 
-  // public void index() {
-  //   if (!outakeLaserBroken()) {
-  //     indexerMotor.set(IntakeConstants.indexerMotorSpeed);
-  //   } else {
-  //     stopIndexer();
-  //   }
-  // }
+  public void stopGroundIntake() {
+    groundIntake.set(0);
+  }
+
   public void groundIntake() {
     if (!intakeLaserBroken()) {
       groundIntake.set(IntakeConstants.groundIntakeMotorSpeed);
@@ -59,8 +48,20 @@ public class GroundIntake extends SubsystemBase {
     }
   }
 
-  public void stopGroundIntake() {
-    groundIntake.set(0);
+  public Command runIntake() {
+    return run(this::groundIntake);
+  }
+
+  public Command stop() {
+    return runOnce(this::stopGroundIntake);
+  }
+
+  public void feedToIndexer() {
+    groundIntake.set(IntakeConstants.groundIntakeMotorSpeed);
+  }
+
+  public void manualOutake() {
+    groundIntake.set(IntakeConstants.outakeSpeed);
   }
 
   @Override
