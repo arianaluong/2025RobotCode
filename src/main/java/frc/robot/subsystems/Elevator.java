@@ -26,10 +26,10 @@ public class Elevator extends SubsystemBase {
   private StatusSignal<Angle> currentPosition;
 
   private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
-  private DigitalInput buttonSwitch = new DigitalInput(30);
+  private DigitalInput buttonSwitch = new DigitalInput(ElevatorConstants.buttonSwitchID);
   private boolean isZeroed = false;
   private boolean isLimitConfigApplied = false;
-  private Alert elevatorAlerts;
+  private Alert elevatorAlert;
 
   public Elevator() {
     elevatorMainMotor = new TalonFX(ElevatorConstants.elevatorMainMotorID, "Cannie");
@@ -45,7 +45,7 @@ public class Elevator extends SubsystemBase {
 
     elevatorMainMotor.getConfigurator().apply(ElevatorConstants.elevatorConfigs);
 
-    elevatorAlerts = new Alert("Elevator is not Zeroed!", AlertType.kWarning);
+    elevatorAlert = new Alert("Elevator is not Zeroed!", AlertType.kWarning);
   }
 
   public boolean buttonPressed() {
@@ -56,15 +56,11 @@ public class Elevator extends SubsystemBase {
     return run(() -> setSpeed(-0.1))
         .until(this::buttonPressed)
         .unless(this::buttonPressed)
-        .finallyDo(this::stop);
+        .finallyDo(this::stopElevator);
   }
 
   public void stopElevator() {
     elevatorMainMotor.set(0);
-  }
-
-  public Command stop() {
-    return runOnce(this::stopElevator);
   }
 
   public void setSpeed(double speed) {
@@ -77,18 +73,16 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command moveToPosition(double height) {
-    return run(() -> elevatorMainMotor.setControl(motionMagicRequest.withPosition(height)));
+    return run(() -> elevatorMainMotor.setControl(motionMagicRequest.withPosition(height)))
+        .onlyIf(() -> isZeroed);
   }
 
   public Command downPosition() {
-    return moveToPosition(0.0).onlyIf(() -> isZeroed);
+    return moveToPosition(0.0);
   }
 
   @Override
   public void periodic() {
-
-    elevatorAlerts.set(!isZeroed);
-
     printPosition();
 
     if (buttonPressed()) {
@@ -96,12 +90,10 @@ public class Elevator extends SubsystemBase {
       isZeroed = true;
     }
 
+    elevatorAlert.set(!isZeroed);
+
     if (isZeroed && !isLimitConfigApplied) {
-      elevatorMainMotor
-          .getConfigurator()
-          .apply(
-              ElevatorConstants.elevatorConfigs.withSoftwareLimitSwitch(
-                  ElevatorConstants.limitSwitchConfigs));
+      elevatorMainMotor.getConfigurator().apply(ElevatorConstants.limitSwitchConfigs);
       isLimitConfigApplied = true;
     }
   }

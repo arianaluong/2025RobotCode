@@ -93,6 +93,7 @@ public class Constants {
 
     public static final int elevatorMainMotorID = 15;
     public static final int elevatorFollowerMotorID = 26;
+    public static final int buttonSwitchID = 23;
 
     public static final double maxHeight = 1.447800;
     public static final double minHeight = 0.0;

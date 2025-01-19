@@ -131,7 +131,7 @@ public class RobotContainer {
     operatorStick
         .button(OperatorConstants.homeElevatorButon)
         .whileTrue(elevator.homeElevator())
-        .onFalse(elevator.stop());
+        .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
 
     operatorStick
         .button(OperatorConstants.manualOutakeButton)
