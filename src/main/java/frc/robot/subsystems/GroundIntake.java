@@ -5,20 +5,36 @@
 package frc.robot.subsystems;
 
 import au.grapplerobotics.LaserCan;
-import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
 
 public class GroundIntake extends SubsystemBase {
   /** Creates a new GroundIntake. */
-  private TalonFX groundIntake;
+  private SparkMax groundIntakeMotor;
 
   private LaserCan intakeLaser;
 
   public GroundIntake() {
-    groundIntake = new TalonFX(15, "Cannie");
+    groundIntakeMotor = new SparkMax(IntakeConstants.groundIntakeMotorID, MotorType.kBrushless);
     intakeLaser = new LaserCan(0);
+
+    SparkMaxConfig groundIntakeConfig = new SparkMaxConfig();
+
+    groundIntakeConfig
+        .inverted(false)
+        .idleMode(IdleMode.kCoast)
+        .smartCurrentLimit(IntakeConstants.groundIntakeCurrentLimit)
+        .secondaryCurrentLimit(IntakeConstants.groundIntakeShutOffLimit);
+
+    groundIntakeMotor.configure(
+        groundIntakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public boolean intakeLaserBroken() {
@@ -37,12 +53,12 @@ public class GroundIntake extends SubsystemBase {
   }
 
   public void stopGroundIntake() {
-    groundIntake.set(0);
+    groundIntakeMotor.set(0);
   }
 
   public void groundIntake() {
     if (!intakeLaserBroken()) {
-      groundIntake.set(IntakeConstants.groundIntakeMotorSpeed);
+      groundIntakeMotor.set(IntakeConstants.groundIntakeMotorSpeed);
     } else {
       stopGroundIntake();
     }
@@ -57,11 +73,11 @@ public class GroundIntake extends SubsystemBase {
   }
 
   public void feedToIndexer() {
-    groundIntake.set(IntakeConstants.groundIntakeMotorSpeed);
+    groundIntakeMotor.set(IntakeConstants.groundIntakeMotorSpeed);
   }
 
   public void manualOutake() {
-    groundIntake.set(IntakeConstants.outakeSpeed);
+    groundIntakeMotor.set(IntakeConstants.outakeSpeed);
   }
 
   @Override
