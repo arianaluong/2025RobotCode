@@ -87,6 +87,9 @@ public class Constants {
 
     public static final int indexerCurrentLimit = 30;
     public static final double indexerShutOffLimit = 45;
+
+    public static final int groundIntakeCurrentLimit = 30;
+    public static final double groundIntakeShutOffLimit = 45;
   }
 
   public static class ElevatorConstants {
