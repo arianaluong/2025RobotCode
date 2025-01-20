@@ -5,7 +5,13 @@
 package frc.robot.subsystems;
 
 import au.grapplerobotics.LaserCan;
-import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
@@ -14,11 +20,22 @@ public class Indexer extends SubsystemBase {
   /** Creates a new Indexer. */
   private LaserCan outakeLaser;
 
-  private TalonFX indexerMotor;
+  private SparkMax indexerMotor;
 
   public Indexer() {
     outakeLaser = new LaserCan(14);
-    indexerMotor = new TalonFX(2, "Cannie");
+    indexerMotor = new SparkMax(IntakeConstants.indexerMotorID, MotorType.kBrushless);
+
+    SparkMaxConfig indexerConfig = new SparkMaxConfig();
+
+    indexerConfig
+        .inverted(true)
+        .idleMode(IdleMode.kCoast)
+        .smartCurrentLimit(IntakeConstants.indexerCurrentLimit)
+        .secondaryCurrentLimit(IntakeConstants.indexerShutOffLimit);
+
+    indexerMotor.configure(
+        indexerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public Command runIndexer() {
@@ -29,19 +46,12 @@ public class Indexer extends SubsystemBase {
     return runOnce(this::stopIndexer);
   }
 
-  // public void index() {
-  //   if (!outakeLaserBroken()) {
-  //     indexerMotor.set(IntakeConstants.indexerMotorSpeed);
-  //   } else {
-  //     stopIndexer();
-  //   }
-  // }
   public void index() {
     indexerMotor.set(IntakeConstants.indexerMotorSpeed);
   }
 
   public void stopIndexer() {
-    indexerMotor.set(0.0);
+    indexerMotor.set(0);
   }
 
   public boolean outakeLaserBroken() {
@@ -61,7 +71,6 @@ public class Indexer extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-
+    SmartDashboard.putNumber("Indexer Speed", indexerMotor.get());
   }
 }
