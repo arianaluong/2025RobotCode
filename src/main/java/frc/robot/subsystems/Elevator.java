@@ -8,12 +8,10 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.SignalLogger;
-import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -29,7 +27,6 @@ public class Elevator extends SubsystemBase {
 
   private TalonFX elevatorFollowerMotor;
   private Follower follower;
-  private StatusSignal<Angle> currentPosition;
 
   private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
   private final VoltageOut voltageRequest = new VoltageOut(0.0);
@@ -43,8 +40,6 @@ public class Elevator extends SubsystemBase {
     elevatorMainMotor = new TalonFX(ElevatorConstants.elevatorMainMotorID, "Cannie");
     elevatorFollowerMotor = new TalonFX(ElevatorConstants.elevatorFollowerMotorID, "Cannie");
     follower = new Follower(ElevatorConstants.elevatorMainMotorID, false);
-
-    currentPosition = elevatorMainMotor.getPosition();
     // elevatorMainMotor.setPosition(Rotations.of(0));
 
     // currentPosition.setUpdateFrequency(50);

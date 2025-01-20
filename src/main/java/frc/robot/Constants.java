@@ -84,6 +84,9 @@ public class Constants {
     public static final double indexerMotorSpeed = .5;
     public static final double groundIntakeMotorSpeed = .9;
     public static final double outakeSpeed = -0.9;
+
+    public static final int indexerCurrentLimit = 30;
+    public static final double indexerShutOffLimit = 45;
   }
 
   public static class ElevatorConstants {
