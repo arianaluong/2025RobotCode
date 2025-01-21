@@ -117,6 +117,7 @@ public class RobotContainer {
         .button(OperatorConstants.indexerButton)
         .and(intakeLaserBroken.negate())
         .whileTrue(indexer.runIndexer())
+        .until(indexer.outakeLaserBroken())
         .onFalse(indexer.stop());
 
     operatorStick

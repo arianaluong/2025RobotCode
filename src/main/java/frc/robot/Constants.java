@@ -77,6 +77,7 @@ public class Constants {
     public static final int groundIntakeMotorID = 25;
     public static final int armIntakeMotorID = 21;
     public static final int indexerMotorID = 22;
+    public static final int algaeIntakeMotorID = 500;
 
     public static final int intakeLaserCanID = 14;
     public static final int outakeLaserCanID = 15;
@@ -94,7 +95,7 @@ public class Constants {
 
   public static class ElevatorConstants {
     public static final double elevatorGearRatio = 1.0 / 6.0;
-    public static final double L4Height = 2; // meters
+    public static final double L4Height = 1.3; // meters
     public static final double elevatorWheelRadius = Units.inchesToMeters(1.75); // meters
 
     public static final int elevatorMainMotorID = 15;
@@ -140,13 +141,6 @@ public class Constants {
                 new SoftwareLimitSwitchConfigs()
                     .withForwardSoftLimitThreshold(maxHeight)
                     .withForwardSoftLimitEnable(true));
-
-    public static final SoftwareLimitSwitchConfigs limitSwitchConfigs =
-        new SoftwareLimitSwitchConfigs()
-            .withForwardSoftLimitThreshold(maxHeight)
-            .withForwardSoftLimitEnable(true)
-            .withReverseSoftLimitThreshold(minHeight)
-            .withReverseSoftLimitEnable(true);
   }
 
   public static class OperatorConstants {

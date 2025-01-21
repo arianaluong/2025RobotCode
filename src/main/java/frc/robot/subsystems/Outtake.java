@@ -1,0 +1,75 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot.subsystems;
+
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
+import au.grapplerobotics.LaserCan;
+
+import com.revrobotics.spark.config.SparkMaxConfig;
+
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.OuttakeConstants;
+
+public class Outtake extends SubsystemBase {
+
+
+private SparkMax outtakemotor; 
+private LaserCan outtakeLaser;
+
+
+public Outtake() {
+outtakemotor = new SparkMax(OuttakeConstants.outtakeMotorID, MotorType.kBrushless);
+outtakeLaser = new LaserCan(OuttakeConstants.outtakeLaserCANId);
+
+
+  SparkMaxConfig outtakeConfig = new SparkMaxConfig();
+
+  outtakeConfig
+  .inverted(true)
+  .idleMode(IdleMode.kCoast)
+  .smartCurrentLimit(OuttakeConstants.outtakeCurrentLimit)
+  .secondaryCurrentLimit(OuttakeConstants.outtakeShutOffLimit);
+
+  outtakemotor.configure(
+      outtakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+}
+
+
+  public void setSpeed(){
+    outtakemotor.set(OuttakeConstants.outtakeSpeed);
+  }
+
+  public void stopouttakeMotor(){
+    outtakemotor.set(0.00);
+  }
+
+  public boolean outtakeLaserBroken() {
+    LaserCan.Measurement measurement = outtakeLaser.getMeasurement();
+    if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+      // System.out.println("The target is " + measurement.distance_mm + "mm away!");
+      // if (measurement.distance_mm < 500) {
+      //   return true;
+      // } else {
+      //   return false;
+      // }
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+  }
+
+
+}
