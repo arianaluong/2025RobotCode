@@ -91,6 +91,18 @@ public class Constants {
 
     public static final int groundIntakeCurrentLimit = 30;
     public static final double groundIntakeShutOffLimit = 45;
+    public static final int intakeCurrentLimit = 30;
+    public static final double algaeIntakeShutoffCurrentLimit = 45.0;
+  }
+
+  public static class OuttakeConstants {
+    public static final int outtakeMotorID = 52;
+    public static final int outtakeLaserCANId = 0;
+    public static final int outtakeCurrentLimit = 25;
+    public static final int outtakeShutOffLimit = 25;
+    public static final double outtakeSpeed = 0.5;
+    public static final int outtakeButton = 5;
+
   }
 
   public static class ElevatorConstants {

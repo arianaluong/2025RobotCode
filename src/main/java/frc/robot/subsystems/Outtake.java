@@ -14,6 +14,8 @@ import au.grapplerobotics.LaserCan;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.OuttakeConstants;
 
@@ -42,8 +44,8 @@ outtakeLaser = new LaserCan(OuttakeConstants.outtakeLaserCANId);
 }
 
 
-  public void setSpeed(){
-    outtakemotor.set(OuttakeConstants.outtakeSpeed);
+  public Command runOuttake(){
+    return Commands.run(()-> outtakemotor.set(OuttakeConstants.outtakeSpeed));
   }
 
   public void stopouttakeMotor(){
