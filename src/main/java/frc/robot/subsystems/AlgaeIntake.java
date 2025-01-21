@@ -21,26 +21,25 @@ import frc.robot.Constants.IntakeConstants;
 
 public class AlgaeIntake extends SubsystemBase {
   /** Creates a new AlgaeIntake. */
-  private SparkMax intakeMotor = new SparkMax(IntakeConstants.intakeMotorId, MotorType.kBrushless);
+  private SparkMax algaeIntakeMotor = new SparkMax(IntakeConstants.algaeIntakeMotorID, MotorType.kBrushless);
 
-  private RelativeEncoder AlgaeIntake = intakeMotor.getEncoder();
+  private RelativeEncoder AlgaeIntake = algaeIntakeMotor.getEncoder();
 
   public AlgaeIntake() {
     DataLogManager.log("Configuring Intake");
     SparkMaxConfig algaeConfig = new SparkMaxConfig();
     algaeConfig.inverted(true)
     .smartCurrentLimit(IntakeConstants.intakeCurrentLimit)
-    .secondaryCurrentLimit(IntakeConstants.shutoffCurrentLimit)
-    .openLoopRampRate(0.01)
+    .secondaryCurrentLimit(IntakeConstants.algaeIntakeShutoffCurrentLimit)
     .idleMode(IdleMode.kBrake);
     
   }
 
   public void feedtoproccessor() {
-    intakeMotor.set(1.0);
+    algaeIntakeMotor.set(1.0);
   }
   public void stopintakealgae(){
-    intakeMotor.set(0);
+    algaeIntakeMotor.set(0);
   }
 
     
@@ -50,7 +49,7 @@ public class AlgaeIntake extends SubsystemBase {
 //       return Commands.sequence(
 //         Commands.runOnce(
 //           () -> {
-//             REVLibError error = intakeMotor.getLastError();
+//             REVLibError error = algaeIntakeMotor.getLastError();
 //             if (error != REVLibError.kOk) {
 //               addError("Intake motor error: " + error.name());
 //             } else {
@@ -80,6 +79,6 @@ public class AlgaeIntake extends SubsystemBase {
 
 public void periodic() {
   // This method will be called once per scheduler run
-  SmartDashboard.putNumber("Intake/Temperature", intakeMotor.getMotorTemperature());
+  SmartDashboard.putNumber("Intake/Temperature", algaeIntakeMotor.getMotorTemperature());
 }
 }

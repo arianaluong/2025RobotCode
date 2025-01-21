@@ -32,6 +32,8 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Robot;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+
+
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -52,6 +54,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private static final double kSimLoopPeriod = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
+
+  
 
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -171,6 +175,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     configureAutoBuilder();
+
   }
 
   /**
@@ -402,6 +407,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
    * @param direction Direction of the SysId Quasistatic test
    * @return Command to run
    */
+
   public Command sysIdQuasistaticRotation(SysIdRoutine.Direction direction) {
     return m_sysIdRoutineRotation.quasistatic(direction);
   }

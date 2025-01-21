@@ -33,7 +33,6 @@ public class Elevator extends SubsystemBase {
 
   private DigitalInput buttonSwitch = new DigitalInput(ElevatorConstants.buttonSwitchID);
   private boolean isZeroed = false;
-  private boolean isLimitConfigApplied = false;
   private Alert elevatorAlert;
 
   public Elevator() {
@@ -91,7 +90,7 @@ public class Elevator extends SubsystemBase {
   public Command moveToPosition(double height) {
     // return run(() -> elevatorMainMotor.setControl(motionMagicRequest.withPosition(height)))
     return run(() -> safelySetControl(height))
-        .onlyIf(() -> isZeroed).until(this::buttonPressed);
+        .onlyIf(()-> isZeroed).until(this::buttonPressed);
   }
 
 
