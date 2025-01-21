@@ -59,7 +59,7 @@ public class Constants {
     public static final String kCameraName = "YOUR CAMERA NAME";
 
     public static final AprilTagFieldLayout kTagLayout =
-        AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
 
     public static final Transform3d kRobotToCam =
         new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0));
