@@ -106,6 +106,8 @@ public class Constants {
 
     public static final double L4Position_inRotations = 1.523;
 
+    public static final double bottomSpeed = .1;
+
     public static final LinearVelocity maxVelocity = MetersPerSecond.of(2.26);
     public static final LinearAcceleration maxAcceleration = MetersPerSecondPerSecond.of(5);
 
