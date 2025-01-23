@@ -4,16 +4,13 @@
 
 package frc.robot.subsystems;
 
+import au.grapplerobotics.LaserCan;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
-import au.grapplerobotics.LaserCan;
-
 import com.revrobotics.spark.config.SparkMaxConfig;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -21,34 +18,30 @@ import frc.robot.Constants.OuttakeConstants;
 
 public class Outtake extends SubsystemBase {
 
+  private SparkMax outtakemotor;
+  private LaserCan outtakeLaser;
 
-private SparkMax outtakemotor; 
-private LaserCan outtakeLaser;
+  public Outtake() {
+    outtakemotor = new SparkMax(OuttakeConstants.outtakeMotorID, MotorType.kBrushless);
+    outtakeLaser = new LaserCan(OuttakeConstants.outtakeLaserCANId);
 
+    SparkMaxConfig outtakeConfig = new SparkMaxConfig();
 
-public Outtake() {
-outtakemotor = new SparkMax(OuttakeConstants.outtakeMotorID, MotorType.kBrushless);
-outtakeLaser = new LaserCan(OuttakeConstants.outtakeLaserCANId);
+    outtakeConfig
+        .inverted(true)
+        .idleMode(IdleMode.kCoast)
+        .smartCurrentLimit(OuttakeConstants.outtakeCurrentLimit)
+        .secondaryCurrentLimit(OuttakeConstants.outtakeShutOffLimit);
 
-
-  SparkMaxConfig outtakeConfig = new SparkMaxConfig();
-
-  outtakeConfig
-  .inverted(true)
-  .idleMode(IdleMode.kCoast)
-  .smartCurrentLimit(OuttakeConstants.outtakeCurrentLimit)
-  .secondaryCurrentLimit(OuttakeConstants.outtakeShutOffLimit);
-
-  outtakemotor.configure(
-      outtakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-}
-
-
-  public Command runOuttake(){
-    return Commands.run(()-> outtakemotor.set(OuttakeConstants.outtakeSpeed));
+    outtakemotor.configure(
+        outtakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public void stopouttakeMotor(){
+  public Command runOuttake() {
+    return Commands.run(() -> outtakemotor.set(OuttakeConstants.outtakeSpeed));
+  }
+
+  public void stopouttakeMotor() {
     outtakemotor.set(0.00);
   }
 
@@ -67,11 +60,8 @@ outtakeLaser = new LaserCan(OuttakeConstants.outtakeLaserCANId);
     }
   }
 
-
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
   }
-
-
 }

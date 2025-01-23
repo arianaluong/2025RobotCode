@@ -25,11 +25,11 @@ import frc.robot.Constants.OuttakeConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GroundIntake;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Outtake;
+import frc.robot.subsystems.Swerve;
 import frc.robot.util.LogUtil;
 import frc.robot.util.PersistentSendableChooser;
 
@@ -50,7 +50,7 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandJoystick operatorStick = new CommandJoystick(1);
 
-  public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+  public final Swerve drivetrain = TunerConstants.createDrivetrain();
 
   private final PowerDistribution powerDistribution = new PowerDistribution();
 
@@ -119,7 +119,7 @@ public class RobotContainer {
     operatorStick
         .button(OperatorConstants.indexerButton)
         .and(intakeLaserBroken.negate())
-        .whileTrue(indexer.runIndexer().until(()->outtake.outtakeLaserBroken()))
+        .whileTrue(indexer.runIndexer().until(() -> outtake.outtakeLaserBroken()))
         // .until(outtake.outtakeLaserBroken())
         .onFalse(indexer.stop());
 
@@ -147,7 +147,7 @@ public class RobotContainer {
         .and(buttonTrigger)
         .whileTrue(groundIntake.run(groundIntake::feedToIndexer))
         .onFalse(groundIntake.stop());
-    
+
     operatorStick.button(OuttakeConstants.outtakeButton).whileTrue(outtake.runOuttake());
   }
 

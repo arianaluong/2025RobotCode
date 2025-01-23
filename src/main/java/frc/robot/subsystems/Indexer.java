@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import au.grapplerobotics.LaserCan;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -18,7 +17,6 @@ import frc.robot.Constants.IntakeConstants;
 
 public class Indexer extends SubsystemBase {
   /** Creates a new Indexer. */
-
   private SparkMax indexerMotor;
 
   public Indexer() {

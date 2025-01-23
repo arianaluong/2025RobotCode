@@ -66,12 +66,11 @@ public class Elevator extends SubsystemBase {
   }
 
   public void setSpeed(double speed) {
-    if(elevatorMainMotor.getPosition().getValueAsDouble() < 50) {
+    if (elevatorMainMotor.getPosition().getValueAsDouble() < 50) {
       elevatorMainMotor.set(ElevatorConstants.bottomSpeed);
     } else {
       elevatorMainMotor.set(speed);
     }
-  
   }
 
   public void printPosition() {
@@ -80,7 +79,7 @@ public class Elevator extends SubsystemBase {
   }
 
   public void safelySetControl(double height) {
-    if(elevatorMainMotor.getPosition().getValueAsDouble() < 50) {
+    if (elevatorMainMotor.getPosition().getValueAsDouble() < 50) {
       elevatorMainMotor.set(ElevatorConstants.bottomSpeed);
     } else {
       elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
@@ -89,11 +88,8 @@ public class Elevator extends SubsystemBase {
 
   public Command moveToPosition(double height) {
     // return run(() -> elevatorMainMotor.setControl(motionMagicRequest.withPosition(height)))
-    return run(() -> safelySetControl(height))
-        .onlyIf(()-> isZeroed).until(this::buttonPressed);
+    return run(() -> safelySetControl(height)).onlyIf(() -> isZeroed).until(this::buttonPressed);
   }
-
-
 
   public Command downPosition() {
     return moveToPosition(0.0);

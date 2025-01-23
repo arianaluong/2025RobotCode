@@ -18,8 +18,11 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -45,6 +48,22 @@ public class Constants {
         maxTranslationalSpeed.div(translationZeroToFull);
     public static final AngularAcceleration maxAngularAcceleration =
         maxRotationalSpeed.div(rotationZeroToFull);
+
+    public static final double TRACK_WIDTH = Units.inchesToMeters(30.0);
+    public static final double WHEEL_BASE = Units.inchesToMeters(30.0);
+
+    public static final Translation2d frontLeft =
+        new Translation2d(WHEEL_BASE / 2, TRACK_WIDTH / 2);
+    public static final Translation2d frontRight =
+        new Translation2d(WHEEL_BASE / 2, -TRACK_WIDTH / 2);
+    public static final Translation2d backLeft =
+        new Translation2d(-WHEEL_BASE / 2, TRACK_WIDTH / 2);
+    public static final Translation2d backRight =
+        new Translation2d(-WHEEL_BASE / 2, -TRACK_WIDTH / 2);
+
+    public static final Translation2d[] wheelLocations = {
+      frontLeft, frontRight, backLeft, backRight
+    };
   }
 
   public static class AutoConstants {
@@ -66,11 +85,47 @@ public class Constants {
 
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
+
+    public static final String limelightName = "limelight";
+    public static final String arducamOneName = "Arducam_OV9281";
+    public static final String arducamTwoName = "Arducam_OVO2";
+
+    public static final Transform3d arducamOneTransform =
+        new Transform3d(
+            Units.inchesToMeters(-4.5),
+            Units.inchesToMeters(-13.25),
+            Units.inchesToMeters(8.50),
+            new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(180.0)));
+
+    public static final Transform3d arducamTwoTransform =
+    new Transform3d(
+        Units.inchesToMeters(-4.5),
+        Units.inchesToMeters(-13.25),
+        Units.inchesToMeters(8.50),
+        new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(180.0)));
+
+    public static final Transform3d limelightTransform =
+    new Transform3d(
+        Units.inchesToMeters(-4.5),
+        Units.inchesToMeters(-13.25),
+        Units.inchesToMeters(8.50),
+        new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(180.0)));
   }
 
   public static class FieldConstants {
     public static AprilTagFieldLayout aprilTagLayout =
         AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+
+
+    // NEED TO CHANGE THESE VALUES
+    public static final Pose2d reefBlueAlliance =
+        new Pose2d(0.0, 5.5, Rotation2d.fromDegrees(0.0));
+    public static final Pose2d reefRedAlliance =
+        new Pose2d(16.54, 5.5, Rotation2d.fromDegrees(180.0));
+  }
+
+  public static class GyroConstants {
+    public static final int pigeonID = 35;
   }
 
   public static class IntakeConstants {
@@ -102,7 +157,6 @@ public class Constants {
     public static final int outtakeShutOffLimit = 25;
     public static final double outtakeSpeed = 0.5;
     public static final int outtakeButton = 5;
-
   }
 
   public static class ElevatorConstants {
