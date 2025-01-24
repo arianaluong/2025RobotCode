@@ -127,17 +127,15 @@ public class Constants {
   }
 
   public static class IntakeConstants {
-    public static final int groundIntakeMotorID = 25;
+    public static final int groundIntakeMotorID = 23;
     public static final int armIntakeMotorID = 21;
     public static final int indexerMotorID = 22;
-    public static final int algaeIntakeMotorID = 500;
 
     public static final int intakeLaserCanID = 14;
-    public static final int outakeLaserCanID = 15;
 
     public static final double indexerMotorSpeed = .5;
     public static final double groundIntakeMotorSpeed = .9;
-    public static final double outakeSpeed = -0.9;
+    public static final double outtakeSpeed = -0.9;
 
     public static final int indexerCurrentLimit = 30;
     public static final double indexerShutOffLimit = 45;
@@ -149,12 +147,18 @@ public class Constants {
   }
 
   public static class OuttakeConstants {
-    public static final int outtakeMotorID = 52;
-    public static final int outtakeLaserCANId = 0;
+    public static final int outtakeMotorID = 46;
     public static final int outtakeCurrentLimit = 25;
     public static final int outtakeShutOffLimit = 25;
     public static final double outtakeSpeed = 0.5;
     public static final int outtakeButton = 5;
+
+    public static final int outtakeLaserCanID = 15;
+  }
+
+  public static class AlgaeIntakeConstants {
+    public static final int algaeIntakeMotorID = 25;
+    public static final double algaeIntakeSpeed = .5;
   }
 
   public static class ElevatorConstants {
@@ -162,7 +166,7 @@ public class Constants {
     public static final double L4Height = 1.3; // meters
     public static final double elevatorWheelRadius = Units.inchesToMeters(1.75); // meters
 
-    public static final int elevatorMainMotorID = 15;
+    public static final int elevatorMainMotorID = 33;
     public static final int elevatorFollowerMotorID = 26;
     public static final int buttonSwitchID = 23;
 
@@ -173,8 +177,8 @@ public class Constants {
 
     public static final double bottomSpeed = .1;
 
-    public static final LinearVelocity maxVelocity = MetersPerSecond.of(2.26);
-    public static final LinearAcceleration maxAcceleration = MetersPerSecondPerSecond.of(5);
+    public static final LinearVelocity maxVelocity = MetersPerSecond.of(1);
+    public static final LinearAcceleration maxAcceleration = MetersPerSecondPerSecond.of(.5);
 
     public static final MotionMagicConfigs motionMagicConfigs =
         new MotionMagicConfigs()
@@ -183,13 +187,13 @@ public class Constants {
 
     public static final Slot0Configs slot0Configs =
         new Slot0Configs()
-            .withKS(0.35)
-            .withKV(0.12)
-            .withKA(0.01)
-            .withKG(0.2)
-            .withKP(4.8)
-            .withKI(0)
-            .withKD(0.1)
+            .withKS(0.0)
+            .withKV(0.0)
+            .withKA(0.0)
+            .withKG(0.0)
+            .withKP(0.0)
+            .withKI(0.0)
+            .withKD(0.0)
             .withGravityType(GravityTypeValue.Elevator_Static)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign);
 
@@ -212,7 +216,7 @@ public class Constants {
     public static final int groundIntakeButton = 9;
     public static final int L4HeightButton = 8;
     public static final int homeElevatorButon = 7;
-    public static final int manualOutakeButton = 6;
-    public static final int manualFeedButton = 5;
+    public static final int manualOuttakeButton = 6;
+    public static final int manualFeedButton = 14;
   }
 }

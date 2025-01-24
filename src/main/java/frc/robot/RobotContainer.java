@@ -114,7 +114,7 @@ public class RobotContainer {
   }
 
   private void configureOperatorBindings() {
-    elevator.setDefaultCommand(elevator.downPosition());
+    // elevator.setDefaultCommand(elevator.downPosition());
 
     operatorStick
         .button(OperatorConstants.indexerButton)
@@ -138,8 +138,8 @@ public class RobotContainer {
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
 
     operatorStick
-        .button(OperatorConstants.manualOutakeButton)
-        .whileTrue(groundIntake.run(groundIntake::manualOutake))
+        .button(OperatorConstants.manualOuttakeButton)
+        .whileTrue(groundIntake.run(groundIntake::manualOuttake))
         .onFalse(groundIntake.stop());
 
     operatorStick
@@ -148,7 +148,10 @@ public class RobotContainer {
         .whileTrue(groundIntake.run(groundIntake::feedToIndexer))
         .onFalse(groundIntake.stop());
 
-    operatorStick.button(OuttakeConstants.outtakeButton).whileTrue(outtake.runOuttake());
+    operatorStick
+        .button(OuttakeConstants.outtakeButton)
+        .whileTrue(outtake.runOuttake())
+        .onFalse(outtake.stopOuttakeMotor());
   }
 
   private void configureAutoChooser() {

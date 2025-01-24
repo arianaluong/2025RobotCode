@@ -23,7 +23,7 @@ public class Outtake extends SubsystemBase {
 
   public Outtake() {
     outtakemotor = new SparkMax(OuttakeConstants.outtakeMotorID, MotorType.kBrushless);
-    outtakeLaser = new LaserCan(OuttakeConstants.outtakeLaserCANId);
+    outtakeLaser = new LaserCan(OuttakeConstants.outtakeLaserCanID);
 
     SparkMaxConfig outtakeConfig = new SparkMaxConfig();
 
@@ -41,8 +41,12 @@ public class Outtake extends SubsystemBase {
     return Commands.run(() -> outtakemotor.set(OuttakeConstants.outtakeSpeed));
   }
 
-  public void stopouttakeMotor() {
+  public void stop() {
     outtakemotor.set(0.00);
+  }
+
+  public Command stopOuttakeMotor() {
+    return runOnce(this::stop);
   }
 
   public boolean outtakeLaserBroken() {

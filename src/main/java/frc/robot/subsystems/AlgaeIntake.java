@@ -12,12 +12,13 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.AlgaeIntakeConstants;
 import frc.robot.Constants.IntakeConstants;
 
 public class AlgaeIntake extends SubsystemBase {
   /** Creates a new AlgaeIntake. */
   private SparkMax algaeIntakeMotor =
-      new SparkMax(IntakeConstants.algaeIntakeMotorID, MotorType.kBrushless);
+      new SparkMax(AlgaeIntakeConstants.algaeIntakeMotorID, MotorType.kBrushless);
 
   private RelativeEncoder AlgaeIntake = algaeIntakeMotor.getEncoder();
 
@@ -31,11 +32,11 @@ public class AlgaeIntake extends SubsystemBase {
         .idleMode(IdleMode.kBrake);
   }
 
-  public void feedtoproccessor() {
-    algaeIntakeMotor.set(1.0);
+  public void startAlgaeIntake() {
+    algaeIntakeMotor.set(AlgaeIntakeConstants.algaeIntakeSpeed);
   }
 
-  public void stopintakealgae() {
+  public void stopAlgaeIntake() {
     algaeIntakeMotor.set(0);
   }
 
