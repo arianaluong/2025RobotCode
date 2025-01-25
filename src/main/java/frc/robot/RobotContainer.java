@@ -56,6 +56,7 @@ public class RobotContainer {
 
   private Trigger intakeLaserBroken = new Trigger(groundIntake::intakeLaserBroken);
   private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
+
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
 
   public RobotContainer() {
@@ -66,10 +67,6 @@ public class RobotContainer {
 
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
-
-    // intakeLaserBroken
-    //     .whileTrue(indexer.run(indexer::index))
-    //     .onFalse(indexer.runOnce(indexer::stopIndexer));
 
     intakeLaserBroken
         .whileTrue(indexer.runIndexer())
@@ -120,7 +117,6 @@ public class RobotContainer {
         .button(OperatorConstants.indexerButton)
         .and(intakeLaserBroken.negate())
         .whileTrue(indexer.runIndexer().until(() -> outtake.outtakeLaserBroken()))
-        // .until(outtake.outtakeLaserBroken())
         .onFalse(indexer.stop());
 
     operatorStick

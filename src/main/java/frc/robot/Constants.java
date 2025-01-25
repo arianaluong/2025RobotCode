@@ -6,12 +6,14 @@ import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
-import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.pathplanner.lib.config.PIDConstants;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -163,7 +165,7 @@ public class Constants {
 
   public static class ElevatorConstants {
     public static final double elevatorGearRatio = 1.0 / 6.0;
-    public static final double L4Height = 1.3; // meters
+    public static final double L4Height = 15; // L4Height = 1.3; // meters
     public static final double elevatorWheelRadius = Units.inchesToMeters(1.75); // meters
 
     public static final int elevatorMainMotorID = 33;
@@ -177,8 +179,8 @@ public class Constants {
 
     public static final double bottomSpeed = .1;
 
-    public static final LinearVelocity maxVelocity = MetersPerSecond.of(1);
-    public static final LinearAcceleration maxAcceleration = MetersPerSecondPerSecond.of(.5);
+    public static final LinearVelocity maxVelocity = MetersPerSecond.of(30);
+    public static final LinearAcceleration maxAcceleration = MetersPerSecondPerSecond.of(20);
 
     public static final MotionMagicConfigs motionMagicConfigs =
         new MotionMagicConfigs()
@@ -191,30 +193,37 @@ public class Constants {
             .withKV(0.0)
             .withKA(0.0)
             .withKG(0.0)
-            .withKP(0.0)
+            .withKP(10.0)
             .withKI(0.0)
-            .withKD(0.0)
+            .withKD(0.1)
             .withGravityType(GravityTypeValue.Elevator_Static)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign);
 
-    public static final FeedbackConfigs feedbackConfigs =
-        new FeedbackConfigs().withSensorToMechanismRatio(elevatorGearRatio * elevatorWheelRadius);
+    // public static final FeedbackConfigs feedbackConfigs =
+    //     new FeedbackConfigs().withSensorToMechanismRatio(elevatorGearRatio *
+    // elevatorWheelRadius);
+
+    public static final MotorOutputConfigs motorOutputConfigs =
+        new MotorOutputConfigs()
+            .withInverted(InvertedValue.Clockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Brake);
 
     public static final TalonFXConfiguration elevatorConfigs =
         new TalonFXConfiguration()
             .withSlot0(slot0Configs)
             .withMotionMagic(motionMagicConfigs)
-            .withFeedback(feedbackConfigs)
+            // .withFeedback(feedbackConfigs)
+            .withMotorOutput(motorOutputConfigs)
             .withSoftwareLimitSwitch(
                 new SoftwareLimitSwitchConfigs()
-                    .withForwardSoftLimitThreshold(maxHeight)
+                    .withForwardSoftLimitThreshold(40)
                     .withForwardSoftLimitEnable(true));
   }
 
   public static class OperatorConstants {
     public static final int indexerButton = 10;
     public static final int groundIntakeButton = 9;
-    public static final int L4HeightButton = 8;
+    public static final int L4HeightButton = 1;
     public static final int homeElevatorButon = 7;
     public static final int manualOuttakeButton = 6;
     public static final int manualFeedButton = 14;

@@ -5,6 +5,7 @@
 // package frc.robot.commands;
 
 // import edu.wpi.first.math.geometry.Pose2d;
+// import edu.wpi.first.math.geometry.Rotation3d;
 // import edu.wpi.first.math.geometry.Transform3d;
 // import edu.wpi.first.wpilibj2.command.Command;
 // import frc.robot.Constants.VisionConstants;
@@ -36,6 +37,9 @@
 //     // int id = bestTarget.getFiducialId();
 //     // double rotationInDegrees = dict.get(id);
 //     Transform3d robotToTarget = bestTarget.getBestCameraToTarget();
+//     Rotation3d apriltag = robotToTarget.getRotation();
+
+//     bestTarget.getYaw();
 
 //     Pose2d currentPose = swerve.getPose();
 
