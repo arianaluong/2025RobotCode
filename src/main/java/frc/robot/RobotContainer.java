@@ -126,7 +126,8 @@ public class RobotContainer {
 
     operatorStick
         .button(OperatorConstants.L4HeightButton)
-        .whileTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+    operatorStick.button(8).whileTrue(elevator.moveToPosition(0));
 
     operatorStick
         .button(OperatorConstants.homeElevatorButon)
