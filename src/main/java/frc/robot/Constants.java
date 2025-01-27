@@ -80,7 +80,7 @@ public class Constants {
     public static final String kCameraName = "YOUR CAMERA NAME";
 
     public static final AprilTagFieldLayout kTagLayout =
-        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
+        AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
     public static final Transform3d kRobotToCam =
         new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0));
@@ -91,6 +91,8 @@ public class Constants {
     public static final String limelightName = "limelight";
     public static final String arducamOneName = "Arducam_OV9281";
     public static final String arducamTwoName = "Arducam_OVO2";
+
+    public static final double aprilTagReefOffset = Units.inchesToMeters(6.488);
 
     public static final Transform3d arducamOneTransform =
         new Transform3d(
@@ -112,6 +114,10 @@ public class Constants {
             Units.inchesToMeters(-13.25),
             Units.inchesToMeters(8.50),
             new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(180.0)));
+
+    public static final int[] reefAprilTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
+
+    public static final double loopPeriodSecs = 0.016;
   }
 
   public static class FieldConstants {
@@ -122,6 +128,36 @@ public class Constants {
     public static final Pose2d reefBlueAlliance = new Pose2d(0.0, 5.5, Rotation2d.fromDegrees(0.0));
     public static final Pose2d reefRedAlliance =
         new Pose2d(16.54, 5.5, Rotation2d.fromDegrees(180.0));
+
+    public static class RedReefPoses {
+      public static final Pose2d faceOneLeft = new Pose2d();
+      public static final Pose2d faceOneRight = new Pose2d();
+      public static final Pose2d faceTwoLeft = new Pose2d();
+      public static final Pose2d faceTwoRight = new Pose2d();
+      public static final Pose2d faceThreeLeft = new Pose2d();
+      public static final Pose2d faceThreeRight = new Pose2d();
+      public static final Pose2d faceFourLeft = new Pose2d();
+      public static final Pose2d faceFourRight = new Pose2d();
+      public static final Pose2d faceFiveLeft = new Pose2d();
+      public static final Pose2d faceFiveRight = new Pose2d();
+      public static final Pose2d faceSixLeft = new Pose2d();
+      public static final Pose2d faceSixRight = new Pose2d();
+    }
+
+    public static class BlueReefPoses {
+      public static final Pose2d faceOneLeft = new Pose2d();
+      public static final Pose2d faceOneRight = new Pose2d();
+      public static final Pose2d faceTwoLeft = new Pose2d();
+      public static final Pose2d faceTwoRight = new Pose2d();
+      public static final Pose2d faceThreeLeft = new Pose2d();
+      public static final Pose2d faceThreeRight = new Pose2d();
+      public static final Pose2d faceFourLeft = new Pose2d();
+      public static final Pose2d faceFourRight = new Pose2d();
+      public static final Pose2d faceFiveLeft = new Pose2d();
+      public static final Pose2d faceFiveRight = new Pose2d();
+      public static final Pose2d faceSixLeft = new Pose2d();
+      public static final Pose2d faceSixRight = new Pose2d();
+    }
   }
 
   public static class GyroConstants {
