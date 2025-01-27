@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -23,6 +21,7 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.OuttakeConstants;
 import frc.robot.Constants.SwerveConstants;
+import frc.robot.commands.CoralAlign;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Elevator;
@@ -41,8 +40,8 @@ public class RobotContainer {
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
-  private final Telemetry logger =
-      new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
+  //   private final Telemetry logger =
+  //       new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
 
   private PersistentSendableChooser<String> batteryChooser;
   private SendableChooser<Command> autoChooser;
@@ -101,13 +100,16 @@ public class RobotContainer {
                         new Rotation2d(
                             -driverController.getLeftY(), -driverController.getLeftX()))));
 
+    driverController.leftTrigger().whileTrue(new CoralAlign("Left"));
+    driverController.rightTrigger().whileTrue(new CoralAlign("Right"));
+
     // reset the field-centric heading on left bumper press
     driverController
         .start()
         .and(driverController.back())
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
-    drivetrain.registerTelemetry(logger::telemeterize);
+    // drivetrain.registerTelemetry(logger::telemeterize);
   }
 
   private void configureOperatorBindings() {
@@ -126,7 +128,8 @@ public class RobotContainer {
 
     operatorStick
         .button(OperatorConstants.L4HeightButton)
-        .whileTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+    operatorStick.button(8).whileTrue(elevator.moveToPosition(0));
 
     operatorStick
         .button(OperatorConstants.homeElevatorButon)

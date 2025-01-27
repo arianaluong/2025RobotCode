@@ -32,14 +32,13 @@ public class Elevator extends SubsystemBase {
   private final VoltageOut voltageRequest = new VoltageOut(0.0);
 
   private DigitalInput buttonSwitch = new DigitalInput(ElevatorConstants.buttonSwitchID);
-  private boolean isZeroed = true; // false
+  private boolean isZeroed = true;
   private Alert elevatorAlert;
 
   public Elevator() {
-    elevatorMainMotor = new TalonFX(ElevatorConstants.elevatorMainMotorID, "Cannie");
+    elevatorMainMotor = new TalonFX(ElevatorConstants.elevatorMainMotorID);
     elevatorFollowerMotor = new TalonFX(ElevatorConstants.elevatorFollowerMotorID, "Cannie");
     follower = new Follower(ElevatorConstants.elevatorMainMotorID, false);
-    // elevatorMainMotor.setPosition(Rotations.of(0));
 
     // currentPosition.setUpdateFrequency(50);
 
@@ -48,6 +47,7 @@ public class Elevator extends SubsystemBase {
     elevatorMainMotor.getConfigurator().apply(ElevatorConstants.elevatorConfigs);
 
     elevatorAlert = new Alert("Elevator is not Zeroed!", AlertType.kWarning);
+    elevatorMainMotor.setPosition(0);
   }
 
   public boolean buttonPressed() {
@@ -66,11 +66,7 @@ public class Elevator extends SubsystemBase {
   }
 
   public void setSpeed(double speed) {
-    if (elevatorMainMotor.getPosition().getValueAsDouble() < 50) {
-      elevatorMainMotor.set(ElevatorConstants.bottomSpeed);
-    } else {
-      elevatorMainMotor.set(speed);
-    }
+    elevatorMainMotor.set(speed);
   }
 
   public void printPosition() {
@@ -78,20 +74,10 @@ public class Elevator extends SubsystemBase {
         "Elevator Position", elevatorMainMotor.getPosition().getValueAsDouble());
   }
 
-  // public void safelySetControl(double height) {
-  //   if (elevatorMainMotor.getPosition().getValueAsDouble() < 50) {
-  //     elevatorMainMotor.set(ElevatorConstants.bottomSpeed);
-  //   } else {
-  //     elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
-  //   }
-  // }
-
   public Command moveToPosition(double height) {
-    System.out.println("OAIUBDAIFBAIFJBASIUFBAISUFASIFUB"); 
     return run(() -> elevatorMainMotor.setControl(motionMagicRequest.withPosition(height)))
         .onlyIf(() -> isZeroed)
         .until(this::buttonPressed);
-    // return run(() -> safelySetControl(height)).onlyIf(() ->isZeroed).until(this::buttonPressed);
   }
 
   public Command downPosition() {
@@ -101,8 +87,8 @@ public class Elevator extends SubsystemBase {
   private final SysIdRoutine elevatorSysIdRoutine =
       new SysIdRoutine(
           new SysIdRoutine.Config(
-              Volts.of(0.5).per(Second), // Use default ramp rate (1 V/s)
-              Volts.of(2), // Reduce dynamic step voltage to 4 V to prevent brownout
+              Volts.of(1.0).per(Second), // Use default ramp rate (1 V/s)
+              Volts.of(4.0), // Reduce dynamic step voltage to 4 V to prevent brownout
               null, // Use default timeout (10 s)
               // Log state with SignalLogger class
               state -> SignalLogger.writeString("SysIdElevator_State", state.toString())),

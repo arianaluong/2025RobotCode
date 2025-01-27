@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -21,9 +20,17 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -35,7 +42,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.FieldConstants;
-import frc.robot.Constants.GyroConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -85,7 +91,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   private Field2d field = new Field2d();
 
-  private Pigeon2 pigeon;
+  // private Pigeon2 pigeon;
 
   private double simYaw = 0.0;
 
@@ -93,6 +99,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       new SwerveDriveKinematics(SwerveConstants.wheelLocations);
 
   SwerveDrivePoseEstimator poseEstimator;
+  SwerveDriveOdometry simOdometry;
 
   // private final PhotonCamera camera;
   // private final PhotonPoseEstimator photonEstimator;
@@ -149,7 +156,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private PhotonCameraSim limelightSim;
   private VisionSystemSim visionSim;
 
-  private List<Pose3d> detectedTargets = new ArrayList<>();
+  public List<Pose3d> detectedTargets = new ArrayList<>();
+  public List<Integer> detectedAprilTags = new ArrayList<>();
   private List<Pose3d> rejectedPoses = new ArrayList<>();
   private List<PoseEstimate> poseEstimates = new ArrayList<>();
 
@@ -262,11 +270,15 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       SwerveModuleConstants<?, ?, ?>... modules) {
     super(drivetrainConstants, odometryUpdateFrequency, modules);
 
-    pigeon =
-        new Pigeon2(GyroConstants.pigeonID, "Cannie"); // Need to change the the pigeon ID for later
+    // pigeon =
+    //     new Pigeon2(GyroConstants.pigeonID, "Cannie"); // Need to change the the pigeon ID for
+    // later
 
     if (Utils.isSimulation()) {
       startSimThread();
+      simOdometry =
+          new SwerveDriveOdometry(
+              kinematics, getState().Pose.getRotation(), getState().ModulePositions);
       visionSim = new VisionSystemSim("main");
 
       visionSim.addAprilTags(FieldConstants.aprilTagLayout);
@@ -545,6 +557,15 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return true;
   }
 
+  public PhotonTrackedTarget getBestAprilTag() {
+    if (!latestLimelightResult.hasTargets()) {
+      return null;
+    }
+
+    PhotonTrackedTarget bestTarget = latestLimelightResult.getBestTarget();
+    return bestTarget;
+  }
+
   private void updateLimelightPoses() {
     if (!latestLimelightResult.hasTargets()) {
       centerSpeakerTarget = Optional.empty();
@@ -564,7 +585,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     double totalDistance = 0.0;
     int tagCount = 0;
 
-    boolean seenCenterTag = false;
+    // boolean seenCenterTag = false;
     for (PhotonTrackedTarget target : visionPose.targetsUsed) {
       tagCount++;
       totalDistance += target.getBestCameraToTarget().getTranslation().toTranslation2d().getNorm();
@@ -574,9 +595,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       //   seenCenterTag = true;
       // }
     }
-    if (!seenCenterTag) {
-      centerSpeakerTarget = Optional.empty();
-    }
+    // if (!seenCenterTag) {
+    //   centerSpeakerTarget = Optional.empty();
+    // }
 
     double averageDistance = totalDistance / tagCount;
 
@@ -603,6 +624,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         continue;
       }
 
+      detectedAprilTags.add(aprilTagID);
+      // charlie was here
       detectedTargets.add(tagPose.get());
     }
   }
@@ -706,7 +729,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     Collections.sort(poseEstimates);
 
     for (PoseEstimate poseEstimate : poseEstimates) {
-      poseEstimator.addVisionMeasurement(
+      addVisionMeasurement(
           poseEstimate.estimatedPose().toPose2d(),
           poseEstimate.timestamp(),
           poseEstimate.standardDevs());
@@ -775,6 +798,28 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     updateVisionPoseEstimates();
 
+    final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+
+    final NetworkTable swerveStateTable = inst.getTable("DriveState");
+    final StructPublisher<Pose2d> drivePose =
+        swerveStateTable.getStructTopic("Pose", Pose2d.struct).publish();
+    final StructPublisher<ChassisSpeeds> driveSpeeds =
+        swerveStateTable.getStructTopic("Speeds", ChassisSpeeds.struct).publish();
+    final StructArrayPublisher<SwerveModuleState> driveModuleStates =
+        swerveStateTable.getStructArrayTopic("ModuleStates", SwerveModuleState.struct).publish();
+    final StructArrayPublisher<SwerveModuleState> driveModuleTargets =
+        swerveStateTable.getStructArrayTopic("ModuleTargets", SwerveModuleState.struct).publish();
+    final StructArrayPublisher<SwerveModulePosition> driveModulePositions =
+        swerveStateTable
+            .getStructArrayTopic("ModulePositions", SwerveModulePosition.struct)
+            .publish();
+
+    drivePose.set(getState().Pose);
+    driveSpeeds.set(getState().Speeds);
+    driveModuleStates.set(getState().ModuleStates);
+    driveModuleTargets.set(getState().ModuleTargets);
+    driveModulePositions.set(getState().ModulePositions);
+
     /*
      * Periodically try to apply the operator perspective.
      * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
@@ -795,12 +840,16 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
   }
 
+  public void method() {}
+
   @Override
   public void simulationPeriodic() {
     // Update camera simulation
     Pose2d robotPose = getState().Pose;
 
     field.getObject("EstimatedRobot").setPose(robotPose);
+
+    visionSim.update(simOdometry.getPoseMeters());
   }
 
   private void startSimThread() {
