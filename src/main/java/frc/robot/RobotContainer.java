@@ -21,7 +21,6 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.OuttakeConstants;
 import frc.robot.Constants.SwerveConstants;
-import frc.robot.commands.CoralAlign;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Elevator;
@@ -100,8 +99,8 @@ public class RobotContainer {
                         new Rotation2d(
                             -driverController.getLeftY(), -driverController.getLeftX()))));
 
-    driverController.leftTrigger().whileTrue(new CoralAlign("Left"));
-    driverController.rightTrigger().whileTrue(new CoralAlign("Right"));
+    // driverController.leftTrigger().whileTrue(new CoralAlign("Left"));
+    // driverController.rightTrigger().whileTrue(new CoralAlign("Right"));
 
     // reset the field-centric heading on left bumper press
     driverController
