@@ -503,7 +503,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         }
 
         detectedAprilTags.add(aprilTagID);
-        // charlie was here
         detectedTargets.add(tagPose.get());
       }
     }
