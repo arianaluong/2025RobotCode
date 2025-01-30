@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants;
@@ -23,6 +24,7 @@ import frc.robot.Constants.OuttakeConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GroundIntake;
 import frc.robot.subsystems.Indexer;
@@ -33,6 +35,7 @@ import frc.robot.util.PersistentSendableChooser;
 
 public class RobotContainer {
   private final Elevator elevator = new Elevator();
+  private final Arm arm = new Arm();
   private final Indexer indexer = new Indexer();
   private final Outtake outtake = new Outtake();
   private final GroundIntake groundIntake = new GroundIntake();
@@ -113,6 +116,8 @@ public class RobotContainer {
 
   private void configureOperatorBindings() {
     // elevator.setDefaultCommand(elevator.downPosition());
+    Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
+
 
     operatorStick
         .button(OperatorConstants.indexerButton)

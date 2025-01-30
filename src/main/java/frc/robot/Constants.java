@@ -29,6 +29,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -265,6 +266,16 @@ public class Constants {
             .withSoftwareLimitSwitch(limitSwitchConfigs);
   }
 
+  public static class ArmConstants {
+    public static final int armMaxVelocity = 0;
+    public static final int armMaxAcceleration = 0;
+
+    public static final int armCurrentLimit = 30;
+
+    public static final TrapezoidProfile.Constraints constraints =
+        new TrapezoidProfile.Constraints(armMaxVelocity, armMaxAcceleration);
+  }
+
   public static class OperatorConstants {
     public static final int indexerButton = 103;
     public static final int groundIntakeButton = 104;
@@ -277,5 +288,7 @@ public class Constants {
     public static final int homeElevatorButon = 100;
     public static final int manualOuttakeButton = 101;
     public static final int manualFeedButton = 102;
+    public static final int armModeButton = 16;
+    public static final int startingConfigButton = 11;
   }
 }
