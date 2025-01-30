@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants;
@@ -100,8 +99,8 @@ public class RobotContainer {
                         new Rotation2d(
                             -driverController.getLeftY(), -driverController.getLeftX()))));
 
-    driverController.leftTrigger().whileTrue(new CoralAlign("Left"));
-    driverController.rightTrigger().whileTrue(new CoralAlign("Right"));
+    driverController.leftBumper().whileTrue(new CoralAlign("Left"));
+    driverController.rightBumper().whileTrue(new CoralAlign("Right"));
 
     // reset the field-centric heading on left bumper press
     driverController
@@ -115,7 +114,6 @@ public class RobotContainer {
   private void configureOperatorBindings() {
     // elevator.setDefaultCommand(elevator.downPosition());
     Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
-
 
     operatorStick
         .button(OperatorConstants.indexerButton)
