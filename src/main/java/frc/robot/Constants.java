@@ -93,31 +93,32 @@ public class Constants {
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
 
     public static final String limelightName = "limelight";
-    public static final String arducamOneName = "Arducam_OV9281";
-    public static final String arducamTwoName = "Arducam_OVO2";
+    public static final String arducamLeftName = "Arducam_OV9281";
+    public static final String arducamRightName = "Arducam_OVO2";
 
     public static final double aprilTagReefOffset = Units.inchesToMeters(6.488);
 
-    public static final Transform3d arducamOneTransform =
+    public static final Transform3d arducamLeftTransform =
         new Transform3d(
-            Units.inchesToMeters(-4.5),
-            Units.inchesToMeters(-13.25),
-            Units.inchesToMeters(8.50),
-            new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(180.0)));
+            Units.inchesToMeters(-12.619),
+            Units.inchesToMeters(-12.619),
+            Units.inchesToMeters(5.143),
+            new Rotation3d(
+                0.0, Units.degreesToRadians(0), Units.degreesToRadians(225))); // Pitch: 65
 
-    public static final Transform3d arducamTwoTransform =
+    public static final Transform3d arducamRightTransform =
         new Transform3d(
-            Units.inchesToMeters(-4.5),
-            Units.inchesToMeters(-13.25),
-            Units.inchesToMeters(8.50),
-            new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(180.0)));
+            Units.inchesToMeters(-12.619),
+            Units.inchesToMeters(12.619),
+            Units.inchesToMeters(5.143),
+            new Rotation3d(0.0, Units.degreesToRadians(0), Units.degreesToRadians(135)));
 
     public static final Transform3d limelightTransform =
         new Transform3d(
-            Units.inchesToMeters(-4.5),
-            Units.inchesToMeters(-13.25),
-            Units.inchesToMeters(8.50),
-            new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(180.0)));
+            Units.inchesToMeters(12.525),
+            Units.inchesToMeters(0),
+            Units.inchesToMeters(4.423),
+            new Rotation3d(0.0, Units.degreesToRadians(0), Units.degreesToRadians(0)));
 
     public static final Transform2d limelightTransform2d =
         new Transform2d(

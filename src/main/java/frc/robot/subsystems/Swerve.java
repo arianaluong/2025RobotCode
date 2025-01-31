@@ -104,19 +104,19 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
   }
 
-  private PhotonCamera arducamOne = new PhotonCamera(VisionConstants.arducamOneName);
-  private PhotonPoseEstimator arducamOnePoseEstimator =
+  private PhotonCamera arducamLeft = new PhotonCamera(VisionConstants.arducamLeftName);
+  private PhotonPoseEstimator arducamLeftPoseEstimator =
       new PhotonPoseEstimator(
           FieldConstants.aprilTagLayout,
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-          VisionConstants.arducamOneTransform);
+          VisionConstants.arducamLeftTransform);
 
-  private PhotonCamera arducamTwo = new PhotonCamera(VisionConstants.arducamTwoName);
-  private PhotonPoseEstimator arducamTwoPoseEstimator =
+  private PhotonCamera arducamRight = new PhotonCamera(VisionConstants.arducamRightName);
+  private PhotonPoseEstimator arducamRightPoseEstimator =
       new PhotonPoseEstimator(
           FieldConstants.aprilTagLayout,
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-          VisionConstants.arducamTwoTransform);
+          VisionConstants.arducamRightTransform);
 
   private PhotonCamera limelight = new PhotonCamera(VisionConstants.limelightName);
   private PhotonPoseEstimator limelightPoseEstimator =
@@ -125,15 +125,15 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
           VisionConstants.limelightTransform);
 
-  private List<PhotonPipelineResult> latestArducamOneResult;
-  private List<PhotonPipelineResult> latestArducamTwoResult;
+  private List<PhotonPipelineResult> latestarducamLeftResult;
+  private List<PhotonPipelineResult> latestarducamRightResult;
   public List<PhotonPipelineResult> latestLimelightResult;
 
   public Transform2d bestAprilTagTransform;
 
   // Temporary fix for inaccurate poses while auto shooting
 
-  private PhotonCameraSim arducamSimOne;
+  private PhotonCameraSim arducamSimLeft;
   private PhotonCameraSim arducamSimTwo;
   private PhotonCameraSim limelightSim;
 
@@ -244,25 +244,25 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       visionSim.addAprilTags(FieldConstants.aprilTagLayout);
 
       SimCameraProperties arducamProperties = new SimCameraProperties();
-      arducamProperties.setCalibration(800, 600, Rotation2d.fromDegrees(68.97));
+      arducamProperties.setCalibration(800, 600, Rotation2d.fromDegrees(85.4));
       arducamProperties.setCalibError(0.21, 0.10);
       arducamProperties.setFPS(28);
       arducamProperties.setAvgLatencyMs(36);
       arducamProperties.setLatencyStdDevMs(15);
       arducamProperties.setExposureTimeMs(45);
 
-      arducamSimOne = new PhotonCameraSim(arducamOne, arducamProperties);
-      arducamSimTwo = new PhotonCameraSim(arducamTwo, arducamProperties);
-      visionSim.addCamera(arducamSimOne, VisionConstants.arducamOneTransform);
-      visionSim.addCamera(arducamSimTwo, VisionConstants.arducamTwoTransform);
+      arducamSimLeft = new PhotonCameraSim(arducamLeft, arducamProperties);
+      arducamSimTwo = new PhotonCameraSim(arducamRight, arducamProperties);
+      visionSim.addCamera(arducamSimLeft, VisionConstants.arducamLeftTransform);
+      visionSim.addCamera(arducamSimTwo, VisionConstants.arducamRightTransform);
 
-      arducamSimOne.enableRawStream(false);
-      arducamSimOne.enableProcessedStream(false);
-      arducamSimTwo.enableRawStream(false);
-      arducamSimTwo.enableProcessedStream(false);
+      arducamSimLeft.enableRawStream(true);
+      arducamSimLeft.enableProcessedStream(true);
+      arducamSimTwo.enableRawStream(true);
+      arducamSimTwo.enableProcessedStream(true);
 
       SimCameraProperties limelightProperties = new SimCameraProperties();
-      limelightProperties.setCalibration(960, 720, Rotation2d.fromDegrees(75.67));
+      limelightProperties.setCalibration(960, 720, Rotation2d.fromDegrees(97.60));
       limelightProperties.setCalibError(0.21, 0.10);
       limelightProperties.setFPS(30);
       limelightProperties.setAvgLatencyMs(36);
@@ -272,8 +272,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       limelightSim = new PhotonCameraSim(limelight, limelightProperties);
       visionSim.addCamera(limelightSim, VisionConstants.limelightTransform);
 
-      limelightSim.enableRawStream(false);
-      limelightSim.enableProcessedStream(false);
+      limelightSim.enableRawStream(true);
+      limelightSim.enableProcessedStream(true);
       limelightSim.enableDrawWireframe(true);
     }
 
@@ -364,12 +364,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return rotationAtTime;
   }
 
-  public Pose3d getArducamOnePose() {
-    return new Pose3d(getState().Pose).plus(VisionConstants.arducamOneTransform);
+  public Pose3d getarducamLeftPose() {
+    return new Pose3d(getState().Pose).plus(VisionConstants.arducamLeftTransform);
   }
 
-  public Pose3d getArducamTwoPose() {
-    return new Pose3d(getState().Pose).plus(VisionConstants.arducamTwoTransform);
+  public Pose3d getarducamRightPose() {
+    return new Pose3d(getState().Pose).plus(VisionConstants.arducamRightTransform);
   }
 
   public Pose3d getLimelightPose() {
@@ -413,7 +413,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   private boolean isValidPose(
       Pose3d visionPose, double averageDistance, int detectedTargets, double timestampSeconds) {
-    if (averageDistance > 6.5) {
+    if (averageDistance > 4.5) { // 6.5
       return false;
     }
 
@@ -514,9 +514,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     rejectedPoses.clear();
 
     updateVisionPoses(
-        latestArducamOneResult, arducamOnePoseEstimator, VisionConstants.arducamOneTransform);
+        latestarducamLeftResult, arducamLeftPoseEstimator, VisionConstants.arducamLeftTransform);
     updateVisionPoses(
-        latestArducamTwoResult, arducamTwoPoseEstimator, VisionConstants.arducamTwoTransform);
+        latestarducamRightResult, arducamRightPoseEstimator, VisionConstants.arducamRightTransform);
     updateVisionPoses(
         latestLimelightResult, limelightPoseEstimator, VisionConstants.limelightTransform);
 
@@ -538,12 +538,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return latestLimelightResult;
   }
 
-  public List<PhotonPipelineResult> getArducamOneResults() {
-    return latestArducamOneResult;
+  public List<PhotonPipelineResult> getarducamLeftResults() {
+    return latestarducamLeftResult;
   }
 
-  public List<PhotonPipelineResult> getArducamTwoResults() {
-    return latestArducamTwoResult;
+  public List<PhotonPipelineResult> getarducamRightResults() {
+    return latestarducamRightResult;
   }
 
   // public Command CoralAlign(String angleOffset) {
@@ -608,8 +608,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     field.setRobotPose(robotPose);
 
-    latestArducamOneResult = arducamOne.getAllUnreadResults();
-    latestArducamTwoResult = arducamTwo.getAllUnreadResults();
+    latestarducamLeftResult = arducamLeft.getAllUnreadResults();
+    latestarducamRightResult = arducamRight.getAllUnreadResults();
     latestLimelightResult = limelight.getAllUnreadResults();
 
     updateVisionPoseEstimates();
@@ -666,6 +666,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     field.getObject("EstimatedRobot").setPose(robotPose);
 
     visionSim.update(robotPose);
+
+    if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+      DriverStation.getAlliance()
+          .ifPresent(
+              allianceColor -> {
+                setOperatorPerspectiveForward(
+                    allianceColor == Alliance.Red
+                        ? kRedAlliancePerspectiveRotation
+                        : kBlueAlliancePerspectiveRotation);
+                m_hasAppliedOperatorPerspective = true;
+              });
+    }
   }
 
   private void startSimThread() {
