@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants;
@@ -57,6 +56,8 @@ public class RobotContainer {
   private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
 
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
+  private Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
+
 
   public RobotContainer() {
     configureDriverBindings();
@@ -100,8 +101,17 @@ public class RobotContainer {
                         new Rotation2d(
                             -driverController.getLeftY(), -driverController.getLeftX()))));
 
-    driverController.leftTrigger().whileTrue(new CoralAlign("Left"));
-    driverController.rightTrigger().whileTrue(new CoralAlign("Right"));
+    Command leftCoralAlign = new CoralAlign("Left");
+    Command rightCoralAlign = new CoralAlign("Right");
+
+    driverController
+        .leftBumper()
+        .whileTrue(leftCoralAlign)
+        .onFalse(Commands.runOnce(() -> leftCoralAlign.cancel()));
+    driverController
+        .rightBumper()
+        .whileTrue(rightCoralAlign)
+        .onFalse(Commands.runOnce(() -> rightCoralAlign.cancel())); 
 
     // reset the field-centric heading on left bumper press
     driverController
@@ -112,63 +122,85 @@ public class RobotContainer {
     // drivetrain.registerTelemetry(logger::telemeterize);
   }
 
-  private void configureOperatorBindings() {
-    // elevator.setDefaultCommand(elevator.downPosition());
-    Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
-
-
+  private void configureElevatorBindings(){
     operatorStick
-        .button(OperatorConstants.indexerButton)
-        .and(intakeLaserBroken.negate())
-        .whileTrue(indexer.runIndexer().until(() -> outtake.outtakeLaserBroken()))
-        .onFalse(indexer.stop());
-
-    operatorStick
-        .button(OperatorConstants.groundIntakeButton)
-        .whileTrue(groundIntake.runIntake())
-        .onFalse(groundIntake.stop());
-
-    operatorStick
-        .button(OperatorConstants.L4HeightButton)
+        .button(OperatorConstants.L4HeightButton).and(armMode.negate())
         .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
     operatorStick
-        .button(OperatorConstants.L3HeightButton)
+        .button(OperatorConstants.L3HeightButton).and(armMode.negate())
         .onTrue(elevator.moveToPosition(ElevatorConstants.L3Height));
     operatorStick
-        .button(OperatorConstants.L2HeightButton)
+        .button(OperatorConstants.L2HeightButton).and(armMode.negate())
         .onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
-    operatorStick.button(OperatorConstants.elevatorDownButton).onTrue(elevator.moveToPosition(0));
+
+    operatorStick.button(OperatorConstants.elevatorDownButton).and(armMode.negate()).onTrue(elevator.moveToPosition(0));
 
     operatorStick
-        .button(OperatorConstants.homeElevatorButon)
+        .button(OperatorConstants.homeElevatorButon).and(armMode.negate())
         .whileTrue(elevator.homeElevator())
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
 
     operatorStick
-        .button(OperatorConstants.elevatorManualDown)
-        .whileTrue(elevator.run(() -> elevator.setSpeed(-.1)))
+        .button(OperatorConstants.elevatorManualDown).and(armMode.negate())
+        .whileTrue(elevator.downSpeed(.1))
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
 
     operatorStick
-        .button(OperatorConstants.elevatorManualUp)
-        .whileTrue(elevator.run(() -> elevator.setSpeed(.1)))
+        .button(OperatorConstants.elevatorManualUp).and(armMode.negate())
+        .whileTrue(elevator.upSpeed(.1))
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
+  }
+
+  private void configureArmBindings() {
+    operatorStick.button(OperatorConstants.groundIntakeButton).and(armMode)
+    .whileTrue(groundIntake.runIntake())
+    .onFalse(groundIntake.stop());
 
     operatorStick
-        .button(OperatorConstants.manualOuttakeButton)
-        .whileTrue(groundIntake.run(groundIntake::manualOuttake))
-        .onFalse(groundIntake.stop());
+    .button(OperatorConstants.armManualOuttakeButton).and(armMode)
+    .whileTrue(groundIntake.run(groundIntake::manualOuttake))
+    .onFalse(groundIntake.stop());
 
-    operatorStick
-        .button(OperatorConstants.manualFeedButton)
-        .and(buttonTrigger)
-        .whileTrue(groundIntake.run(groundIntake::feedToIndexer))
-        .onFalse(groundIntake.stop());
+    //Button to raise arm manual up
 
+    //button to raise arm manual down
+
+    //arm to pick up button
+
+    //arm to L1 height button
+  }
+
+  private void configureOuttakeBindings(){
     operatorStick
-        .button(OuttakeConstants.outtakeButton)
-        .whileTrue(outtake.runOuttake())
-        .onFalse(outtake.stopOuttakeMotor());
+    .button(OperatorConstants.outtakeButton).and(armMode.negate())
+    .whileTrue(outtake.runOuttake())
+    .onFalse(outtake.stopOuttakeMotor());
+  }
+
+  private void configureIndexerBindings(){
+    operatorStick
+    .button(OperatorConstants.indexerButton).and(armMode.negate())
+    .whileTrue(indexer.runIndexer().alongWith(outtake.runOuttake()).unless(outtakeLaserBroken).until(outtakeLaserBroken))
+    .onFalse(indexer.stop().alongWith(outtake.stopOuttakeMotor()));
+
+    //button to outtake indexer
+
+  }
+
+  private void configureAlgaeIntakeBindings(){
+    // button for algae intake up
+    // button for algae intake down
+  }
+
+  private void configureOperatorBindings() {
+    configureAlgaeIntakeBindings();
+    configureArmBindings();
+    configureElevatorBindings();
+    configureIndexerBindings();
+    configureOuttakeBindings();
+    
+    //starting config button
+
   }
 
   private void configureAutoChooser() {

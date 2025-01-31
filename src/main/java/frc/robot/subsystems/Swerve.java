@@ -457,7 +457,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       List<PhotonPipelineResult> latestResults,
       PhotonPoseEstimator poseEstimator,
       Transform3d cameraTransform) {
-    if (!latestResults.isEmpty()) {
+    if (latestResults.isEmpty()) {
       return;
     }
 

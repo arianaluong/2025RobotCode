@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -202,7 +203,6 @@ public class Constants {
     public static final int outtakeCurrentLimit = 25;
     public static final int outtakeShutOffLimit = 25;
     public static final double outtakeSpeed = 0.5;
-    public static final int outtakeButton = 5;
 
     public static final int outtakeLaserCanID = 15;
   }
@@ -261,12 +261,18 @@ public class Constants {
             .withInverted(
                 InvertedValue.CounterClockwise_Positive) // needs to spin left when wires up
             .withNeutralMode(NeutralModeValue.Brake);
-    public static final SoftwareLimitSwitchConfigs limitSwitchConfigs =
+    public static final SoftwareLimitSwitchConfigs softwareLimitSwitchConfigs =
         new SoftwareLimitSwitchConfigs()
             .withForwardSoftLimitThreshold(maxHeight)
             .withForwardSoftLimitEnable(true)
             .withReverseSoftLimitThreshold(minHeight)
             .withReverseSoftLimitEnable(true);
+
+    public static final HardwareLimitSwitchConfigs hardwareLimitSwitchConfigs =
+        new HardwareLimitSwitchConfigs()
+            .withReverseLimitAutosetPositionEnable(true)
+            .withReverseLimitAutosetPositionValue(0)
+            .withReverseLimitRemoteSensorID(ElevatorConstants.buttonSwitchID);
 
     public static final TalonFXConfiguration elevatorConfigs =
         new TalonFXConfiguration()
@@ -274,7 +280,8 @@ public class Constants {
             .withMotionMagic(motionMagicConfigs)
             .withFeedback(feedbackConfigs)
             .withMotorOutput(motorOutputConfigs)
-            .withSoftwareLimitSwitch(limitSwitchConfigs);
+            .withSoftwareLimitSwitch(softwareLimitSwitchConfigs)
+            .withHardwareLimitSwitch(hardwareLimitSwitchConfigs);
   }
 
   public static class ArmConstants {
@@ -288,18 +295,34 @@ public class Constants {
   }
 
   public static class OperatorConstants {
-    public static final int indexerButton = 103;
-    public static final int groundIntakeButton = 104;
+    public static final int indexerButton = 13;
+    public static final int outtakeIndexerButton = 4;
+
+    public static final int groundIntakeButton = 13;
+    public static final int armManualOuttakeButton = 12;
+
+    public static final int armPickupHeightButton = 5;
+    public static final int armL1HeightButton = 6;
+    public static final int armManualUp = 10;
+    public static final int armManualDown = 9;
+
     public static final int L4HeightButton = 8;
     public static final int L3HeightButton = 7;
     public static final int L2HeightButton = 6;
     public static final int elevatorDownButton = 5;
     public static final int elevatorManualUp = 10;
     public static final int elevatorManualDown = 9;
-    public static final int homeElevatorButon = 100;
-    public static final int manualOuttakeButton = 101;
-    public static final int manualFeedButton = 102;
+    public static final int homeElevatorButon = 2;
+
+    public static final int outtakeButton = 12;
+
+    public static final int algaeIntakeDown = 14;
+    public static final int algaeIntakeUp = 15;
+
     public static final int armModeButton = 16;
+
     public static final int startingConfigButton = 11;
+
+
   }
 }
