@@ -431,7 +431,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       return false;
     }
 
-    if (averageDistance > 3 && detectedTargets < 2) {//4
+    if (averageDistance > 3 && detectedTargets < 2) { // 4
       return false;
     }
 
