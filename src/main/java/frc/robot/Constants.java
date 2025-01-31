@@ -323,7 +323,5 @@ public class Constants {
     public static final int armModeButton = 16;
 
     public static final int startingConfigButton = 11;
-
-
   }
 }

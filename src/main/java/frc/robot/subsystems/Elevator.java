@@ -70,19 +70,20 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command upSpeed(double speed) {
-    return run(()-> {
-      elevatorMainMotor.set(speed);
-    elevatorFollowerMotor.set(speed);
-    }
-    );
+    return run(
+        () -> {
+          elevatorMainMotor.set(speed);
+          elevatorFollowerMotor.set(speed);
+        });
   }
 
   public Command downSpeed(double speed) {
-    return run(()->  {
-      elevatorMainMotor.set(-speed);
-      elevatorFollowerMotor.set(-speed);
-    }
-    ).until(this::buttonPressed).unless(this::buttonPressed);
+    return run(() -> {
+          elevatorMainMotor.set(-speed);
+          elevatorFollowerMotor.set(-speed);
+        })
+        .until(this::buttonPressed)
+        .unless(this::buttonPressed);
   }
 
   public void printMainPosition() {

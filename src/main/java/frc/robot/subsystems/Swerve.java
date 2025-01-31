@@ -14,6 +14,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -26,6 +27,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
@@ -411,6 +413,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   //   return bestTransform;
   // }
 
+  private Vector<N3> getVisionStdDevs(
+      int tagCount, double averageDistance, double baseStandardDev) {
+    double stdDevScale = 1 + (averageDistance * averageDistance) / 30;
+
+    return VecBuilder.fill(
+        baseStandardDev * stdDevScale, baseStandardDev * stdDevScale, Double.POSITIVE_INFINITY);
+  }
+
   private boolean isValidPose(
       Pose3d visionPose, double averageDistance, int detectedTargets, double timestampSeconds) {
     if (averageDistance > 4.5) { // 6.5
@@ -421,7 +431,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       return false;
     }
 
-    if (averageDistance > 4.0 && detectedTargets < 2) {
+    if (averageDistance > 3 && detectedTargets < 2) {//4
       return false;
     }
 
@@ -456,7 +466,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private void updateVisionPoses(
       List<PhotonPipelineResult> latestResults,
       PhotonPoseEstimator poseEstimator,
-      Transform3d cameraTransform) {
+      Transform3d cameraTransform,
+      double tagStdDev) {
     if (latestResults.isEmpty()) {
       return;
     }
@@ -492,7 +503,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       }
 
       poseEstimates.add(
-          new PoseEstimate(visionPose.estimatedPose, visionPose.timestampSeconds, null));
+          new PoseEstimate(
+              visionPose.estimatedPose,
+              visionPose.timestampSeconds,
+              getVisionStdDevs(tagCount, averageDistance, tagStdDev)));
 
       for (PhotonTrackedTarget target : visionPose.targetsUsed) {
         int aprilTagID = target.getFiducialId();
@@ -514,16 +528,28 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     rejectedPoses.clear();
 
     updateVisionPoses(
-        latestarducamLeftResult, arducamLeftPoseEstimator, VisionConstants.arducamLeftTransform);
+        latestarducamLeftResult,
+        arducamLeftPoseEstimator,
+        VisionConstants.arducamLeftTransform,
+        Units.inchesToMeters(2.5));
     updateVisionPoses(
-        latestarducamRightResult, arducamRightPoseEstimator, VisionConstants.arducamRightTransform);
+        latestarducamRightResult,
+        arducamRightPoseEstimator,
+        VisionConstants.arducamRightTransform,
+        Units.inchesToMeters(2.5));
     updateVisionPoses(
-        latestLimelightResult, limelightPoseEstimator, VisionConstants.limelightTransform);
+        latestLimelightResult,
+        limelightPoseEstimator,
+        VisionConstants.limelightTransform,
+        Units.inchesToMeters(2.5));
 
     Collections.sort(poseEstimates);
 
     for (PoseEstimate poseEstimate : poseEstimates) {
-      addVisionMeasurement(poseEstimate.estimatedPose().toPose2d(), poseEstimate.timestamp(), null);
+      addVisionMeasurement(
+          poseEstimate.estimatedPose().toPose2d(),
+          poseEstimate.timestamp(),
+          poseEstimate.standardDevs());
     }
 
     field

@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.Constants.OuttakeConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.CoralAlign;
 import frc.robot.commands.TeleopSwerve;
@@ -57,7 +56,6 @@ public class RobotContainer {
 
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
   private Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
-
 
   public RobotContainer() {
     configureDriverBindings();
@@ -111,7 +109,7 @@ public class RobotContainer {
     driverController
         .rightBumper()
         .whileTrue(rightCoralAlign)
-        .onFalse(Commands.runOnce(() -> rightCoralAlign.cancel())); 
+        .onFalse(Commands.runOnce(() -> rightCoralAlign.cancel()));
 
     // reset the field-centric heading on left bumper press
     driverController
@@ -122,72 +120,91 @@ public class RobotContainer {
     // drivetrain.registerTelemetry(logger::telemeterize);
   }
 
-  private void configureElevatorBindings(){
+  private void configureElevatorBindings() {
     operatorStick
-        .button(OperatorConstants.L4HeightButton).and(armMode.negate())
+        .button(OperatorConstants.L4HeightButton)
+        .and(armMode.negate())
         .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
     operatorStick
-        .button(OperatorConstants.L3HeightButton).and(armMode.negate())
+        .button(OperatorConstants.L3HeightButton)
+        .and(armMode.negate())
         .onTrue(elevator.moveToPosition(ElevatorConstants.L3Height));
     operatorStick
-        .button(OperatorConstants.L2HeightButton).and(armMode.negate())
+        .button(OperatorConstants.L2HeightButton)
+        .and(armMode.negate())
         .onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
 
-    operatorStick.button(OperatorConstants.elevatorDownButton).and(armMode.negate()).onTrue(elevator.moveToPosition(0));
+    operatorStick
+        .button(OperatorConstants.elevatorDownButton)
+        .and(armMode.negate())
+        .onTrue(elevator.moveToPosition(0));
 
     operatorStick
-        .button(OperatorConstants.homeElevatorButon).and(armMode.negate())
+        .button(OperatorConstants.homeElevatorButon)
+        .and(armMode.negate())
         .whileTrue(elevator.homeElevator())
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
 
     operatorStick
-        .button(OperatorConstants.elevatorManualDown).and(armMode.negate())
+        .button(OperatorConstants.elevatorManualDown)
+        .and(armMode.negate())
         .whileTrue(elevator.downSpeed(.1))
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
 
     operatorStick
-        .button(OperatorConstants.elevatorManualUp).and(armMode.negate())
+        .button(OperatorConstants.elevatorManualUp)
+        .and(armMode.negate())
         .whileTrue(elevator.upSpeed(.1))
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
   }
 
   private void configureArmBindings() {
-    operatorStick.button(OperatorConstants.groundIntakeButton).and(armMode)
-    .whileTrue(groundIntake.runIntake())
-    .onFalse(groundIntake.stop());
+    operatorStick
+        .button(OperatorConstants.groundIntakeButton)
+        .and(armMode)
+        .whileTrue(groundIntake.runIntake())
+        .onFalse(groundIntake.stop());
 
     operatorStick
-    .button(OperatorConstants.armManualOuttakeButton).and(armMode)
-    .whileTrue(groundIntake.run(groundIntake::manualOuttake))
-    .onFalse(groundIntake.stop());
+        .button(OperatorConstants.armManualOuttakeButton)
+        .and(armMode)
+        .whileTrue(groundIntake.run(groundIntake::manualOuttake))
+        .onFalse(groundIntake.stop());
 
-    //Button to raise arm manual up
+    // Button to raise arm manual up
 
-    //button to raise arm manual down
+    // button to raise arm manual down
 
-    //arm to pick up button
+    // arm to pick up button
 
-    //arm to L1 height button
+    // arm to L1 height button
   }
 
-  private void configureOuttakeBindings(){
+  private void configureOuttakeBindings() {
     operatorStick
-    .button(OperatorConstants.outtakeButton).and(armMode.negate())
-    .whileTrue(outtake.runOuttake())
-    .onFalse(outtake.stopOuttakeMotor());
+        .button(OperatorConstants.outtakeButton)
+        .and(armMode.negate())
+        .whileTrue(outtake.runOuttake())
+        .onFalse(outtake.stopOuttakeMotor());
   }
 
-  private void configureIndexerBindings(){
+  private void configureIndexerBindings() {
     operatorStick
-    .button(OperatorConstants.indexerButton).and(armMode.negate())
-    .whileTrue(indexer.runIndexer().alongWith(outtake.runOuttake()).unless(outtakeLaserBroken).until(outtakeLaserBroken))
-    .onFalse(indexer.stop().alongWith(outtake.stopOuttakeMotor()));
+        .button(OperatorConstants.indexerButton)
+        .and(armMode.negate())
+        .whileTrue(
+            indexer
+                .runIndexer()
+                .alongWith(outtake.runOuttake())
+                .unless(outtakeLaserBroken)
+                .until(outtakeLaserBroken))
+        .onFalse(indexer.stop().alongWith(outtake.stopOuttakeMotor()));
 
-    //button to outtake indexer
+    // button to outtake indexer
 
   }
 
-  private void configureAlgaeIntakeBindings(){
+  private void configureAlgaeIntakeBindings() {
     // button for algae intake up
     // button for algae intake down
   }
@@ -198,8 +215,8 @@ public class RobotContainer {
     configureElevatorBindings();
     configureIndexerBindings();
     configureOuttakeBindings();
-    
-    //starting config button
+
+    // starting config button
 
   }
 
