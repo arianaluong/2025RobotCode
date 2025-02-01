@@ -32,6 +32,7 @@ public class Robot extends TimedRobot {
     CanBridge.runTCP();
 
     DataLogManager.start();
+
     DriverStation.startDataLog(DataLogManager.getLog());
 
     SignalLogger.start();
