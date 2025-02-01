@@ -36,7 +36,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.FieldConstants;
-import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import java.util.ArrayList;
@@ -359,18 +358,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   public Pose2d getAprilTagPose(Boolean leftAlign) {
-    List<PhotonPipelineResult> latestResults = getLimelightResults();
+    List<PhotonPipelineResult> latestResult = getLimelightResults();
     List<PhotonTrackedTarget> targets = new ArrayList<>();
     List<Transform2d> transforms = new ArrayList<>();
-    Pose2d exceptionPose = new Pose2d(100.0, 100.0, new Rotation2d(0));
+    Pose2d exceptionPose = new Pose2d(10.0, 10.0, new Rotation2d(0));
     Transform2d poseTransform;
     Transform2d aprilTagOffset = new Transform2d(0, 0, new Rotation2d(0));
 
-    if (latestResults == null || latestResults.isEmpty()) {
+    if (latestResult == null || latestResult.isEmpty()) {
       return exceptionPose;
     }
 
-    for (PhotonPipelineResult result : latestResults) {
+    for (PhotonPipelineResult result : latestResult) {
       if (!result.hasTargets()) {
         return exceptionPose;
       } else {
@@ -411,7 +410,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             .Pose
             .transformBy(VisionConstants.limelightTransform2d)
             .transformBy(poseTransform);
-    System.out.println("The target pose is: " + aprilTagPose);
+    // System.out.println("The target pose is: " + aprilTagPose);
+    System.out.println("The lbset transform is: " + bestTransform);
+
+    // System.out.println("The offset is: " + aprilTagOffset);
+
     return aprilTagPose;
   }
 
@@ -423,24 +426,13 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   //       leftAlign
   //           ? new Transform2d(0.0, .5, new Rotation2d(0))
   //           : new Transform2d(0.0, -.5, new Rotation2d(0));
+  //   // System.out.println("The Target pose is" + testPose.plus(offset));
   //   return testPose.plus(offset);
   // }
 
-  public Command ReefAlign(Boolean leftAlign) {
-
-    return AutoBuilder.pathfindToPose(
-        getAprilTagPose(leftAlign), SwerveConstants.pathConstraints, 0.0);
-  }
-
   // public Command ReefAlign(Boolean leftAlign) {
   //   return AutoBuilder.pathfindToPose(
-  //      getAprilTagPose(leftAlign),
-  //       new PathConstraints(
-  //           SwerveConstants.maxTranslationalSpeed.in(MetersPerSecond),
-  //           SwerveConstants.maxTransationalAcceleration.in(MetersPerSecondPerSecond),
-  //           SwerveConstants.maxRotationalSpeed.in(RadiansPerSecond),
-  //           SwerveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond)),
-  //       0);
+  //       getAprilTagPose(leftAlign), SwerveConstants.pathConstraints, 0.0);
   // }
 
   /**
@@ -469,41 +461,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   public Pose3d getLimelightPose() {
     return new Pose3d(getState().Pose).plus(VisionConstants.limelightTransform);
   }
-
-  // public static Transform2d getBestTransform(List<Transform2d> transforms) {
-  //   // Define a comparator to sort transforms by their magnitude
-  //   Comparator<Transform2d> comparator =
-  //       Comparator.comparingDouble(
-  //           transform ->
-  //               transform.getTranslation().getNorm()
-  //                   + Math.abs(transform.getRotation().getRadians()));
-
-  //   // Sort the list of transforms in ascending order of magnitude
-  //   Collections.sort(transforms, comparator);
-
-  //   // Return the first transform (which has the smallest magnitude)
-  //   return transforms.get(0);
-  // }
-
-  // public Transform2d getBestAprilTag(List<PhotonPipelineResult> latestResult) {
-
-  //   List<Transform2d> targets = new ArrayList<>();
-  //   for (PhotonPipelineResult result : latestResult) {
-
-  //     Optional<EstimatedRobotPose> optionalVisionPose = limelightPoseEstimator.update(result);
-  //     EstimatedRobotPose visionPose = optionalVisionPose.get();
-
-  //     for (PhotonTrackedTarget target : visionPose.targetsUsed) {
-  //       targets.add(
-  //           new Transform2d(
-  //               target.getBestCameraToTarget().getX(),
-  //               target.getBestCameraToTarget().getY(),
-  //               target.getBestCameraToTarget().getRotation().toRotation2d()));
-  //     }
-  //   }
-  //   Transform2d bestTransform = getBestTransform(targets);
-  //   return bestTransform;
-  // }
 
   private Vector<N3> getVisionStdDevs(
       int tagCount, double averageDistance, double baseStandardDev) {
@@ -723,7 +680,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   @Override
   public void periodic() {
     Pose2d robotPose = getState().Pose;
-
+    getAprilTagPose(true);
     field.setRobotPose(robotPose);
 
     latestarducamLeftResult = arducamLeft.getAllUnreadResults();
@@ -731,7 +688,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     latestLimelightResult = limelight.getAllUnreadResults();
 
     updateVisionPoseEstimates();
-    getAprilTagPose(true);
     // final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
     // final NetworkTable swerveStateTable = inst.getTable("DriveState");

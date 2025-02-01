@@ -275,9 +275,9 @@ public class Constants {
     public static final SoftwareLimitSwitchConfigs softwareLimitSwitchConfigs =
         new SoftwareLimitSwitchConfigs()
             .withForwardSoftLimitThreshold(maxHeight)
-            .withForwardSoftLimitEnable(true)
-            .withReverseSoftLimitThreshold(minHeight)
-            .withReverseSoftLimitEnable(true);
+            .withForwardSoftLimitEnable(true);
+    // .withReverseSoftLimitThreshold(minHeight)
+    // .withReverseSoftLimitEnable(true);
 
     public static final HardwareLimitSwitchConfigs hardwareLimitSwitchConfigs =
         new HardwareLimitSwitchConfigs()
@@ -291,8 +291,8 @@ public class Constants {
             .withMotionMagic(motionMagicConfigs)
             .withFeedback(feedbackConfigs)
             .withMotorOutput(motorOutputConfigs)
-            .withSoftwareLimitSwitch(softwareLimitSwitchConfigs)
-            .withHardwareLimitSwitch(hardwareLimitSwitchConfigs);
+            .withSoftwareLimitSwitch(softwareLimitSwitchConfigs);
+    // .withHardwareLimitSwitch(hardwareLimitSwitchConfigs);
   }
 
   public static class ArmConstants {
