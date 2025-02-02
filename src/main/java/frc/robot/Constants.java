@@ -145,14 +145,24 @@ public class Constants {
     public static Transform3d leftArducamTransform;
   }
 
+  // .890 7.415
   public static class FieldConstants {
     public static AprilTagFieldLayout aprilTagLayout =
         AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
+    public static final Pose2d redStationLeft =
+        new Pose2d(16.638, 0.645, Rotation2d.fromDegrees(0));
+    public static final Pose2d redStationRight =
+        new Pose2d(16.638, 7.415, Rotation2d.fromDegrees(0));
+    public static final Pose2d blueStationLeft = new Pose2d(0.85, 7.415, Rotation2d.fromDegrees(0));
+    public static final Pose2d blueStationRight =
+        new Pose2d(0.85, 0.645, Rotation2d.fromDegrees(0));
+
     // NEED TO CHANGE THESE VALUES
-    public static final Pose2d reefBlueAlliance = new Pose2d(0.0, 5.5, Rotation2d.fromDegrees(0.0));
+    public static final Pose2d reefBlueAlliance =
+        new Pose2d(4.480, 4.046, Rotation2d.fromDegrees(0.0));
     public static final Pose2d reefRedAlliance =
-        new Pose2d(16.54, 5.5, Rotation2d.fromDegrees(180.0));
+        new Pose2d(13.077, 4.046, Rotation2d.fromDegrees(0));
 
     public static class RedReefPoses {
       public static final Pose2d faceOneLeft = new Pose2d();
