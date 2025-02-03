@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.6538758116883114,
-        "y": 4.174573863636363
+        "x": 6.188,
+        "y": 5.092
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.048841749805184,
-        "y": 3.930549036222579
+        "x": 6.582965938116872,
+        "y": 4.8479751725862155
       },
       "isLocked": false,
       "linkedName": "Coral Station"
@@ -48,7 +48,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -117.5528115767178
   },
   "useDefaultConstraints": true
 }
