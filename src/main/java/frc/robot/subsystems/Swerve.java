@@ -404,7 +404,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     PhotonTrackedTarget bestTarget = validTargets.get(0);
 
     bestTargetID = bestTarget.getFiducialId();
-    desiredRotation = AllianceUtil.aprilTagAngles.getOrDefault(bestTargetID, 0.0);
+    desiredRotation = FieldConstants.aprilTagAngles.getOrDefault(bestTargetID, 0.0);
     Transform2d bestTransform =
         new Transform2d(
             bestTarget.getBestCameraToTarget().getX(),
@@ -413,10 +413,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     Transform2d leftAprilTagOffset =
         new Transform2d(
-            Units.inchesToMeters(-18.25), VisionConstants.aprilTagReefOffset, new Rotation2d(0));
+            -SwerveConstants.centerToBumber,
+            FieldConstants.left_aprilTagOffsets.getOrDefault(bestTargetID, 0.0),
+            new Rotation2d(0));
     Transform2d rightAprilTagOffset =
         new Transform2d(
-            Units.inchesToMeters(-18.25), -VisionConstants.aprilTagReefOffset, new Rotation2d(0));
+            -SwerveConstants.centerToBumber,
+            FieldConstants.right_aprilTagOffsets.getOrDefault(bestTargetID, 0.0),
+            new Rotation2d(0));
 
     Pose2d leftAprilTagPose =
         getState()
@@ -511,7 +515,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         },
         Set.of(this));
   }
-
 
   /**
    * Returns a command that applies the specified control request to this swerve drivetrain.
@@ -750,8 +753,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     final StructArrayPublisher<SwerveModuleState> driveModuleStates =
         swerveStateTable.getStructArrayTopic("ModuleStates", SwerveModuleState.struct).publish();
     final StructArrayPublisher<SwerveModuleState> driveModuleTargets =
-        swerveStateTable.getStructArrayTopic("ModuleTargets",
-    SwerveModuleState.struct).publish();
+        swerveStateTable.getStructArrayTopic("ModuleTargets", SwerveModuleState.struct).publish();
     final StructArrayPublisher<SwerveModulePosition> driveModulePositions =
         swerveStateTable
             .getStructArrayTopic("ModulePositions", SwerveModulePosition.struct)
