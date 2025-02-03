@@ -44,6 +44,7 @@ import edu.wpi.first.units.measure.Time;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Constants {
@@ -160,11 +161,28 @@ public class Constants {
     public static final Pose2d blueStationRight =
         new Pose2d(0.85, 0.645, Rotation2d.fromDegrees(0));
 
-    // NEED TO CHANGE THESE VALUES
+    public static final List<Pose2d> redSetupPoses =
+        List.of(
+            new Pose2d(15.297, 4.019, Rotation2d.fromDegrees(180)), // 0
+            new Pose2d(14.176, 5.96, Rotation2d.fromDegrees(-120)), // 60
+            new Pose2d(11.934, 5.96, Rotation2d.fromDegrees(-60)), // 120
+            new Pose2d(10.813, 4.019, Rotation2d.fromDegrees(0)), // 180
+            new Pose2d(11.934, 2.0774, Rotation2d.fromDegrees(160)), // -120
+            new Pose2d(14.176, 2.0774, Rotation2d.fromDegrees(120))); // -60
+
+    public static final List<Pose2d> blueSetupPoses =
+        List.of(
+            new Pose2d(6.725, 4.019, Rotation2d.fromDegrees(180)), // 0
+            new Pose2d(5.604, 5.961, Rotation2d.fromDegrees(-120)), // 60
+            new Pose2d(3.362, 5.961, Rotation2d.fromDegrees(-60)), // 120
+            new Pose2d(2.241, 4.019, Rotation2d.fromDegrees(0)), // 180
+            new Pose2d(3.362, 2.078, Rotation2d.fromDegrees(60)), // -120
+            new Pose2d(5.604, 2.078, Rotation2d.fromDegrees(120))); // -60
+
     public static final Pose2d reefBlueAlliance =
-        new Pose2d(4.480, 4.046, Rotation2d.fromDegrees(0.0));
+        new Pose2d(4.483, 4.019, Rotation2d.fromDegrees(0.0));
     public static final Pose2d reefRedAlliance =
-        new Pose2d(13.077, 4.046, Rotation2d.fromDegrees(0));
+        new Pose2d(13.055, 4.019, Rotation2d.fromDegrees(0));
 
     public static final Map<Integer, Double> aprilTagAngles = new HashMap<>();
 

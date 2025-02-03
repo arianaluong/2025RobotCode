@@ -430,6 +430,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 new Transform2d(
                     bestTransform.getTranslation().plus(leftAprilTagOffset.getTranslation()),
                     new Rotation2d(0)));
+
     leftPoseX = leftAprilTagPose.getX();
     leftPoseY = leftAprilTagPose.getY();
 
@@ -478,7 +479,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     try {
       if (AllianceUtil.isRedAlliance()) {
         closestStation = getState().Pose.nearest(redStations);
-        // Use the index to determine which station is closest
         if (redStations.indexOf(closestStation) == 0) {
           path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
         } else {
@@ -486,7 +486,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         }
       } else {
         closestStation = getState().Pose.nearest(blueStations);
-        // Use the index to determine which station is closest
         if (blueStations.indexOf(closestStation) == 0) {
           path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
         } else {
@@ -512,6 +511,27 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             System.err.println("Invalid goalPath, path cannot be followed.");
             return new InstantCommand();
           }
+        },
+        Set.of(this));
+  }
+
+  public Command pathFindToSetup() {
+    return new DeferredCommand(
+        () -> {
+          Pose2d closestPose;
+
+          List<Pose2d> redSetupPoses = FieldConstants.redSetupPoses;
+          List<Pose2d> blueSetupPoses = FieldConstants.blueSetupPoses;
+
+          if (AllianceUtil.isRedAlliance()) {
+            closestPose = getState().Pose.nearest(redSetupPoses);
+
+          } else {
+            closestPose = getState().Pose.nearest(blueSetupPoses);
+          }
+
+          Pose2d goalSetUpPose = closestPose;
+          return AutoBuilder.pathfindToPose(goalSetUpPose, SwerveConstants.pathConstraints);
         },
         Set.of(this));
   }
