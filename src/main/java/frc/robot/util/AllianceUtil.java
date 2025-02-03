@@ -5,8 +5,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants.FieldConstants;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -34,22 +32,5 @@ public class AllianceUtil {
 
   public static Pose2d getReefPose() {
     return isRedAlliance() ? FieldConstants.reefRedAlliance : FieldConstants.reefBlueAlliance;
-  }
-
-  public static final Map<Integer, Double> aprilTagAngles = new HashMap<>();
-
-  static {
-    aprilTagAngles.put(6, 120.0);
-    aprilTagAngles.put(7, 180.0);
-    aprilTagAngles.put(8, -120.0);
-    aprilTagAngles.put(9, -60.0);
-    aprilTagAngles.put(10, 0.0);
-    aprilTagAngles.put(11, 60.0);
-    aprilTagAngles.put(17, 60.0);
-    aprilTagAngles.put(18, 0.0);
-    aprilTagAngles.put(19, -60.0);
-    aprilTagAngles.put(20, -120.0);
-    aprilTagAngles.put(21, 180.0);
-    aprilTagAngles.put(22, 120.0);
   }
 }
