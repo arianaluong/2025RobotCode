@@ -311,11 +311,11 @@ public class Constants {
   public static class IntakeConstants {
     public static final int groundIntakeMotorID = 23;
     public static final int armIntakeMotorID = 21;
-    public static final int indexerMotorID = 22;
+    public static final int indexerMotorID = 45;
 
     public static final int intakeLaserCanID = 14;
 
-    public static final double indexerMotorSpeed = .5;
+    public static final double indexerMotorSpeed = .85;
     public static final double groundIntakeMotorSpeed = .9;
     public static final double outtakeSpeed = -0.9;
 
@@ -350,10 +350,10 @@ public class Constants {
     public static final int elevatorFollowerMotorID = 49;
     public static final int buttonSwitchID = 23;
 
-    public static final double maxHeight = Units.inchesToMeters(27.5);
+    public static final double maxHeight = Units.inchesToMeters(28.30);
     public static final double minHeight = 0.0;
 
-    public static final double L4Height = Units.inchesToMeters(27.25);
+    public static final double L4Height = Units.inchesToMeters(28.25);
     public static final double L3Height = Units.inchesToMeters(20);
     public static final double L2Height = Units.inchesToMeters(10);
     public static final double downHeight = Units.inchesToMeters(0);
@@ -377,7 +377,7 @@ public class Constants {
             .withKV(1.72) // 5.14
             .withKA(0.01) // .04
             .withKG(0.1) // .31
-            .withKP(20)
+            .withKP(30)
             .withKI(0.0)
             .withKD(.25) // 1
             .withGravityType(GravityTypeValue.Elevator_Static)
