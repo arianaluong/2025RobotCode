@@ -264,6 +264,44 @@ public class Constants {
       public static final Pose2d faceSixLeft = new Pose2d();
       public static final Pose2d faceSixRight = new Pose2d();
     }
+
+    public static class ReefDefinitePoses {
+      public static final List<Pose2d> blueReefDefiniteLeftPoses =
+          List.of(
+              new Pose2d(6.162, 4.187, Rotation2d.fromDegrees(180)),
+              new Pose2d(5.43, 2.682, Rotation2d.fromDegrees(120)),
+              new Pose2d(3.824, 2.449, Rotation2d.fromDegrees(60)),
+              new Pose2d(2.805, 3.839, Rotation2d.fromDegrees(0)),
+              new Pose2d(3.524, 5.446, Rotation2d.fromDegrees(300)),
+              new Pose2d(5.143, 5.601, Rotation2d.fromDegrees(240)));
+
+      public static final List<Pose2d> blueReefDefiniteRightPoses =
+          List.of(
+              new Pose2d(6.162, 4.187, Rotation2d.fromDegrees(180)),
+              new Pose2d(5.43, 2.682, Rotation2d.fromDegrees(120)),
+              new Pose2d(3.824, 2.449, Rotation2d.fromDegrees(60)),
+              new Pose2d(2.805, 3.839, Rotation2d.fromDegrees(0)),
+              new Pose2d(3.524, 5.446, Rotation2d.fromDegrees(300)),
+              new Pose2d(5.143, 5.601, Rotation2d.fromDegrees(240)));
+
+      public static final List<Pose2d> redReefDefiniteRightPoses =
+          List.of(
+              new Pose2d(14.752, 4.161, Rotation2d.fromDegrees(180)),
+              new Pose2d(14.032, 2.601, Rotation2d.fromDegrees(120)),
+              new Pose2d(12.398, 2.412, Rotation2d.fromDegrees(60)),
+              new Pose2d(11.351, 3.85, Rotation2d.fromDegrees(0)),
+              new Pose2d(12.105, 5.428, Rotation2d.fromDegrees(300)),
+              new Pose2d(13.759, 5.596, Rotation2d.fromDegrees(240)));
+
+      public static final List<Pose2d> redReefDefiniteLeftPoses =
+          List.of(
+              new Pose2d(14.752, 3.85, Rotation2d.fromDegrees(180)),
+              new Pose2d(13.738, 2.412, Rotation2d.fromDegrees(120)),
+              new Pose2d(12.105, 2.559, Rotation2d.fromDegrees(60)),
+              new Pose2d(11.351, 4.161, Rotation2d.fromDegrees(0)),
+              new Pose2d(12.356, 5.617, Rotation2d.fromDegrees(300)),
+              new Pose2d(14.032, 5.449, Rotation2d.fromDegrees(240)));
+    }
   }
 
   public static class GyroConstants {
