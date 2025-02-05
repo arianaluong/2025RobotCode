@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.WPILibVersion;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.generated.TunerConstants;
 import frc.robot.util.LogUtil;
 
 public class Robot extends TimedRobot {
@@ -82,7 +81,7 @@ public class Robot extends TimedRobot {
 
     CommandScheduler.getInstance().run();
 
-    CANBusStatus canStatus = TunerConstants.kCANBus.getStatus();
+    CANBusStatus canStatus = frc.robot.util.TunerConstants.kCANBus.getStatus();
     CANStatus rioCanStatus = RobotController.getCANStatus();
 
     SmartDashboard.putNumber("CANivore/CAN Utilization %", canStatus.BusUtilization * 100.0);

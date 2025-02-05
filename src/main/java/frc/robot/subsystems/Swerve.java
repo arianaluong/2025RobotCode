@@ -50,8 +50,9 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.FieldConstants.ReefDefinitePoses;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.util.AllianceUtil;
+import frc.robot.util.TunerConstants.TunerSwerveDrivetrain;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
