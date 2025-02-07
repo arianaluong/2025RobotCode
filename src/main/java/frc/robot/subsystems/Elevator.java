@@ -142,6 +142,8 @@ public class Elevator extends ExpandedSubsystem {
   public void periodic() {
     printMainPosition();
     printFollowerPosition();
+
+    SmartDashboard.putBoolean("Button Pressed", buttonPressed());
     // System.out.println("The button is pressed:" + buttonPressed());
 
     // if (!isZeroed && buttonPressed()) {

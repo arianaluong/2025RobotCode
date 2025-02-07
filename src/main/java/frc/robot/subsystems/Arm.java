@@ -12,8 +12,14 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.util.ExpandedSubsystem;
 
 public class Arm extends ExpandedSubsystem {
@@ -24,9 +30,13 @@ public class Arm extends ExpandedSubsystem {
   /** Creates a new CoralArmIntake. */
   public Arm() {
     armMotor = new SparkMax(47, MotorType.kBrushless);
-    // armAbsoluteEncoder = armMotor.getAbsoluteEncoder();
+    armAbsoluteEncoder = armMotor.getAbsoluteEncoder();
     armPIDController = armMotor.getClosedLoopController();
     SparkMaxConfig armConfig = new SparkMaxConfig();
+    AbsoluteEncoderConfig encoderConfig = new AbsoluteEncoderConfig();
+
+    encoderConfig.inverted(false).positionConversionFactor(1).zeroOffset(0);
+
 
     armConfig
         .inverted(false)
@@ -41,7 +51,11 @@ public class Arm extends ExpandedSubsystem {
         .p(0)
         .i(0)
         .d(0);
-    armConfig.closedLoop.maxMotion.maxVelocity(0).maxAcceleration(0);
+    armConfig
+        .closedLoop
+        .maxMotion
+        .maxVelocity(ArmConstants.armMaxVelocity)
+        .maxAcceleration(ArmConstants.armMaxAcceleration);
     armConfig
         .softLimit
         .forwardSoftLimit(50)
@@ -49,17 +63,22 @@ public class Arm extends ExpandedSubsystem {
         .reverseSoftLimit(-50)
         .reverseSoftLimitEnabled(true);
 
+    armConfig.absoluteEncoder.apply(encoderConfig);
+
     armMotor.configure(armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public void armBottom() {
-    armPIDController.setReference(0, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0);
+  public Command armBottom() {
+    return runOnce(()-> armPIDController.setReference(0, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
+   
   }
 
-  public void armUp() {
-    // armPIDController.setReference(10, ControlType.kMAXMotionPositionControl,
-    // ClosedLoopSlot.kSlot0);
-    armMotor.set(1);
+  public Command armTop() {
+    return runOnce(()-> armPIDController.setReference(1, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
+  }
+
+  public void armSpeed(double speed) {
+    armMotor.set(speed);
   }
 
   public void stopArm() {
@@ -68,6 +87,6 @@ public class Arm extends ExpandedSubsystem {
 
   @Override
   public void periodic() {
-    // SmartDashboard.putNumber("Arm Rotations", armAbsoluteEncoder.getPosition());
+    SmartDashboard.putNumber("Arm Rotations", armAbsoluteEncoder.getPosition());
   }
 }

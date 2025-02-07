@@ -109,8 +109,8 @@ public class Constants {
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
 
     public static final String limelightName = "limelight";
-    public static final String arducamLeftName = "Arducam_OV9281";
-    public static final String arducamRightName = "Arducam_OVO2";
+    public static final String arducamLeftName = "Arducam_Left";
+    public static final String arducamRightName = "Arducam_Right";
 
     public static final Transform3d arducamLeftTransform =
         new Transform3d(
@@ -132,7 +132,7 @@ public class Constants {
             Units.inchesToMeters(12.525),
             Units.inchesToMeters(1),
             Units.inchesToMeters(4.423),
-            new Rotation3d(0.0, Units.degreesToRadians(-25), Units.degreesToRadians(0)));
+            new Rotation3d(0.0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
 
     public static final Transform2d limelightTransform2d =
         new Transform2d(
@@ -312,9 +312,9 @@ public class Constants {
   public static class IntakeConstants {
     public static final int groundIntakeMotorID = 23;
     public static final int armIntakeMotorID = 21;
-    public static final int indexerMotorID = 45;
+    public static final int indexerMotorID = 16;
 
-    public static final int intakeLaserCanID = 14;
+    public static final int intakeLaserCanID = 17;
 
     public static final double indexerMotorSpeed = .85;
     public static final double groundIntakeMotorSpeed = .9;
@@ -330,16 +330,16 @@ public class Constants {
   }
 
   public static class OuttakeConstants {
-    public static final int outtakeMotorID = 46;
+    public static final int outtakeMotorID = 18;
     public static final int outtakeCurrentLimit = 25;
     public static final int outtakeShutOffLimit = 25;
-    public static final double outtakeSpeed = 0.5;
+    public static final double outtakeSpeed = 0.85;
 
-    public static final int outtakeLaserCanID = 15;
+    public static final int outtakeLaserCanID = 19;
   }
 
   public static class AlgaeIntakeConstants {
-    public static final int algaeIntakeMotorID = 25;
+    public static final int algaeIntakeMotorID = 20;
     public static final double algaeIntakeSpeed = .5;
   }
 
@@ -349,9 +349,9 @@ public class Constants {
 
     public static final int elevatorMainMotorID = 48;
     public static final int elevatorFollowerMotorID = 49;
-    public static final int buttonSwitchID = 23;
+    public static final int buttonSwitchID = 0;
 
-    public static final double maxHeight = Units.inchesToMeters(28.30);
+    public static final double maxHeight = Units.inchesToMeters(28.3);
     public static final double minHeight = 0.0;
 
     public static final double L4Height = Units.inchesToMeters(28.25);
@@ -375,10 +375,10 @@ public class Constants {
     public static final Slot0Configs slot0Configs =
         new Slot0Configs()
             .withKS(0.01)
-            .withKV(1.72) // 5.14
-            .withKA(0.01) // .04
-            .withKG(0.1) // .31
-            .withKP(30)
+            .withKV(5.16) // 5.14
+            .withKA(0.03) // .04
+            .withKG(0.25) // .31
+            .withKP(13)
             .withKI(0.0)
             .withKD(.25) // 1
             .withGravityType(GravityTypeValue.Elevator_Static)
