@@ -49,6 +49,10 @@ import java.util.Map;
 
 public class Constants {
   public static class SwerveConstants {
+    
+
+
+
     public static final LinearVelocity maxTranslationalSpeed = FeetPerSecond.of(15);
     public static final LinearVelocity slowModeMaxTranslationalSpeed = FeetPerSecond.of(5);
     public static final AngularVelocity maxRotationalSpeed = RotationsPerSecond.of(1.5);

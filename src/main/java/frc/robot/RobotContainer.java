@@ -23,7 +23,7 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
-import frc.robot.generated.TunerConstants;
+import frc.robot.util.TunerConstants;
 import frc.robot.subsystems.AlgaeIntake;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
@@ -50,7 +50,7 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandJoystick operatorStick = new CommandJoystick(1);
 
-  public final Swerve drivetrain = TunerConstants.createDrivetrain();
+  public final Swerve drivetrain = frc.robot.util.TunerConstants.createDrivetrain();
 
   private final PowerDistribution powerDistribution = new PowerDistribution();
 
