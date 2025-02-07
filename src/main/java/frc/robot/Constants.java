@@ -49,9 +49,6 @@ import java.util.Map;
 
 public class Constants {
   public static class SwerveConstants {
-    
-
-
 
     public static final LinearVelocity maxTranslationalSpeed = FeetPerSecond.of(15);
     public static final LinearVelocity slowModeMaxTranslationalSpeed = FeetPerSecond.of(5);
@@ -133,7 +130,7 @@ public class Constants {
     public static final Transform3d limelightTransform =
         new Transform3d(
             Units.inchesToMeters(12.525),
-            Units.inchesToMeters(0),
+            Units.inchesToMeters(1),
             Units.inchesToMeters(4.423),
             new Rotation3d(0.0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
 
