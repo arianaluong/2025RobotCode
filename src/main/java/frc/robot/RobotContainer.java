@@ -8,6 +8,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -22,8 +23,8 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
-import frc.robot.commands.TurnToReef;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.AlgaeIntake;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GroundIntake;
@@ -39,6 +40,7 @@ public class RobotContainer {
   private final Indexer indexer = new Indexer();
   private final Outtake outtake = new Outtake();
   private final GroundIntake groundIntake = new GroundIntake();
+  private final AlgaeIntake algaeIntake = new AlgaeIntake();
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
@@ -77,15 +79,23 @@ public class RobotContainer {
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
 
-    intakeLaserBroken
-        .whileTrue(indexer.runIndexer())
-        .onFalse(
-            Commands.race(Commands.waitUntil(outtakeLaserBroken), Commands.waitSeconds(4))
-                .andThen(indexer::stopIndexer));
+    // intakeLaserBroken
+    //     .whileTrue(indexer.runIndexer())
+    //     .onFalse(
+    //         Commands.race(Commands.waitUntil(outtakeLaserBroken), Commands.waitSeconds(4))
+    //             .andThen(indexer::stopIndexer));
+
+    new Trigger(outtakeLaserBroken).onTrue(Commands.sequence(
+        Commands.runOnce(()-> driverController.getHID().setRumble(RumbleType.kBothRumble, 1)),
+        Commands.waitSeconds(2),
+        Commands.runOnce(() -> driverController.getHID().setRumble(RumbleType.kBothRumble, 0.0))));
+
+
   }
 
   private void configureDriverBindings() {
-    Trigger slowMode = driverController.leftBumper();
+    Trigger slowMode = driverController.leftTrigger();
+    
 
     drivetrain.setDefaultCommand(
         new TeleopSwerve(
@@ -114,28 +124,28 @@ public class RobotContainer {
     // driverController.R1().whileTrue(drivetrain.ReefAlign(false));
 
     // driverController.R2().whileTrue(new TurnToReef(drivetrain));
-    driverController.leftTrigger().whileTrue(drivetrain.humanPlayerAlign());
+    driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
 
+    driverController
+        .leftBumper()
+        .whileTrue(
+            Commands.sequence(
+                // drivetrain.pathFindToSetup(),
+                // new TurnToReef(drivetrain),
+                // Commands.waitSeconds(.08),
+                drivetrain.ReefAlign(true)));
     driverController
         .rightBumper()
         .whileTrue(
             Commands.sequence(
-                drivetrain.pathFindToSetup(),
-                new TurnToReef(drivetrain),
-                Commands.waitSeconds(.08),
-                drivetrain.ReefAlign(true)));
-    driverController
-        .rightTrigger()
-        .whileTrue(
-            Commands.sequence(
-                drivetrain.pathFindToSetup(),
-                new TurnToReef(drivetrain),
-                Commands.waitSeconds(.08),
+                // drivetrain.pathFindToSetup(),
+                // new TurnToReef(drivetrain),
+                // Commands.waitSeconds(.08),
                 drivetrain.ReefAlign(false)));
 
-    // driverController.rightBumper().whileTrue(drivetrain.ReefAlignNoVision(true));
+    // driverController.leftBumper().whileTrue(drivetrain.ReefAlignNoVision(true));
 
-    // driverController.rightTrigger().whileTrue(drivetrain.ReefAlignNoVision(false));
+    // driverController.rightBumper().whileTrue(drivetrain.ReefAlignNoVision(false));
 
     // reset the field-centric heading on left bumper press
     driverController
@@ -215,21 +225,17 @@ public class RobotContainer {
   }
 
   private void configureIndexerBindings() {
-    // operatorStick
-    //     .button(OperatorConstants.indexerButton)
-    //     .and(armMode.negate())
-    //     .whileTrue(
-    //         indexer
-    //             .runIndexer()
-    //             .alongWith(outtake.runOuttake())
-    //             .unless(outtakeLaserBroken)
-    //             .until(outtakeLaserBroken))
-    //     .onFalse(indexer.stop().alongWith(outtake.stopOuttakeMotor()));
     operatorStick
         .button(OperatorConstants.indexerButton)
         .and(armMode.negate())
         .whileTrue(indexer.runIndexer())
         .onFalse(indexer.stop());
+
+    operatorStick
+        .button(OperatorConstants.indexerButton)
+        .and(armMode.negate()).and(outtakeLaserBroken.negate())
+        .whileTrue(outtake.intakeUntilBeamBreak())
+        .onFalse(outtake.stopOuttakeMotor());
 
     operatorStick
         .button(OperatorConstants.outtakeIndexerButton)
@@ -238,8 +244,8 @@ public class RobotContainer {
   }
 
   private void configureAlgaeIntakeBindings() {
-    // button for algae intake up
-    // button for algae intake down
+operatorStick.button(OperatorConstants.algaeIntakeUp).whileTrue(algaeIntake.run(algaeIntake::algaeIntakeUp)).onFalse(algaeIntake.runOnce(algaeIntake::stopAlgaeIntake));
+operatorStick.button(OperatorConstants.algaeIntakeDown).whileTrue(algaeIntake.run(algaeIntake::algaeIntakeDown)).onFalse(algaeIntake.runOnce(algaeIntake::stopAlgaeIntake));
   }
 
   private void configureOperatorBindings() {
@@ -249,8 +255,9 @@ public class RobotContainer {
     configureIndexerBindings();
     configureOuttakeBindings();
 
-    // starting config button
-
+operatorStick.button(OperatorConstants.startingConfigButton)
+.whileTrue(elevator.downPosition().andThen(arm.armBottom()).andThen(Commands.sequence(algaeIntake.run(algaeIntake::algaeIntakeUp), Commands.waitSeconds(1.5), algaeIntake.runOnce(algaeIntake::stopAlgaeIntake))))
+.onFalse(algaeIntake.runOnce( algaeIntake::stopAlgaeIntake).andThen(elevator.runOnce(elevator::stopElevator)).andThen(arm.runOnce(arm::stopArm)));
   }
 
   private void configureAutoChooser() {

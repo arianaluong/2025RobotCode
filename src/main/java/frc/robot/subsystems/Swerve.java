@@ -24,16 +24,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -794,27 +787,28 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     alliance = DriverStation.getAlliance();
 
     updateVisionPoseEstimates();
-    final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    // final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
-    final NetworkTable swerveStateTable = inst.getTable("DriveState");
-    final StructPublisher<Pose2d> drivePose =
-        swerveStateTable.getStructTopic("Pose", Pose2d.struct).publish();
-    final StructPublisher<ChassisSpeeds> driveSpeeds =
-        swerveStateTable.getStructTopic("Speeds", ChassisSpeeds.struct).publish();
-    final StructArrayPublisher<SwerveModuleState> driveModuleStates =
-        swerveStateTable.getStructArrayTopic("ModuleStates", SwerveModuleState.struct).publish();
-    final StructArrayPublisher<SwerveModuleState> driveModuleTargets =
-        swerveStateTable.getStructArrayTopic("ModuleTargets", SwerveModuleState.struct).publish();
-    final StructArrayPublisher<SwerveModulePosition> driveModulePositions =
-        swerveStateTable
-            .getStructArrayTopic("ModulePositions", SwerveModulePosition.struct)
-            .publish();
+    // final NetworkTable swerveStateTable = inst.getTable("DriveState");
+    // final StructPublisher<Pose2d> drivePose =
+    //     swerveStateTable.getStructTopic("Pose", Pose2d.struct).publish();
+    // final StructPublisher<ChassisSpeeds> driveSpeeds =
+    //     swerveStateTable.getStructTopic("Speeds", ChassisSpeeds.struct).publish();
+    // final StructArrayPublisher<SwerveModuleState> driveModuleStates =
+    //     swerveStateTable.getStructArrayTopic("ModuleStates", SwerveModuleState.struct).publish();
+    // final StructArrayPublisher<SwerveModuleState> driveModuleTargets =
+    //     swerveStateTable.getStructArrayTopic("ModuleTargets",
+    // SwerveModuleState.struct).publish();
+    // final StructArrayPublisher<SwerveModulePosition> driveModulePositions =
+    //     swerveStateTable
+    //         .getStructArrayTopic("ModulePositions", SwerveModulePosition.struct)
+    //         .publish();
 
-    drivePose.set(getState().Pose);
-    driveSpeeds.set(getState().Speeds);
-    driveModuleStates.set(getState().ModuleStates);
-    driveModuleTargets.set(getState().ModuleTargets);
-    driveModulePositions.set(getState().ModulePositions);
+    // drivePose.set(getState().Pose);
+    // driveSpeeds.set(getState().Speeds);
+    // driveModuleStates.set(getState().ModuleStates);
+    // driveModuleTargets.set(getState().ModuleTargets);
+    // driveModulePositions.set(getState().ModulePositions);
 
     /*
      * Periodically try to apply the operator perspective.
