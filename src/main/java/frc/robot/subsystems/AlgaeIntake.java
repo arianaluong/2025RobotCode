@@ -4,10 +4,13 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.AbsoluteEncoderConfig;
+import com.revrobotics.spark.config.SoftLimitConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,21 +23,39 @@ public class AlgaeIntake extends ExpandedSubsystem {
   private SparkMax algaeIntakeMotor =
       new SparkMax(AlgaeIntakeConstants.algaeIntakeMotorID, MotorType.kBrushless);
 
-  private RelativeEncoder AlgaeIntake = algaeIntakeMotor.getEncoder();
+  private AbsoluteEncoder algaeEncoder = algaeIntakeMotor.getAbsoluteEncoder();
+  private SparkMaxConfig algaeConfig = new SparkMaxConfig();
+  private AbsoluteEncoderConfig encoderConfig = new AbsoluteEncoderConfig();
 
   public AlgaeIntake() {
     DataLogManager.log("Configuring Intake");
-    SparkMaxConfig algaeConfig = new SparkMaxConfig();
+
     algaeConfig
         .inverted(true)
         .smartCurrentLimit(IntakeConstants.intakeCurrentLimit)
         .secondaryCurrentLimit(IntakeConstants.algaeIntakeShutoffCurrentLimit)
-        .idleMode(IdleMode.kBrake);
+        .idleMode(IdleMode.kBrake);        
+
+    encoderConfig.inverted(false).positionConversionFactor(360).zeroOffset(0);
+  
+    algaeConfig.absoluteEncoder.apply(encoderConfig);
   }
 
-  public void startAlgaeIntake() {
+  
+  public void algaeIntakeUp() {
+    // if(algaeEncoder.getPosition() >= 100) {
+    //   algaeIntakeMotor.set(0);
+    // }
     algaeIntakeMotor.set(AlgaeIntakeConstants.algaeIntakeSpeed);
   }
+
+  public void algaeIntakeDown() {
+    // if(algaeEncoder.getPosition() <= -100) {
+    //   algaeIntakeMotor.set(0);
+    // }
+    algaeIntakeMotor.set(-AlgaeIntakeConstants.algaeIntakeSpeed);
+  }
+
 
   public void stopAlgaeIntake() {
     algaeIntakeMotor.set(0);
@@ -76,7 +97,7 @@ public class AlgaeIntake extends ExpandedSubsystem {
 
   public void periodic() {
     // This method will be called once per scheduler run
-    SmartDashboard.putNumber("Intake/Temperature", algaeIntakeMotor.getMotorTemperature());
+    SmartDashboard.putNumber("Algae Intake Encoder Offset", algaeEncoder.getPosition());
   }
 
   // public Command getPrematchCheckCommand(
