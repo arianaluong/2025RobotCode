@@ -40,6 +40,7 @@ public class RobotContainer {
   private final Indexer indexer = new Indexer();
   private final Outtake outtake = new Outtake();
   private final GroundIntake groundIntake = new GroundIntake();
+  private final Telemetry logger = new Telemetry(15);
   private final AlgaeIntake algaeIntake = new AlgaeIntake();
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -153,7 +154,7 @@ public class RobotContainer {
         .and(driverController.start())
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
-    // drivetrain.registerTelemetry(logger::telemeterize);
+    drivetrain.registerTelemetry(logger::telemeterize);
   }
 
   private void configureElevatorBindings() {
