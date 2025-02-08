@@ -6,9 +6,11 @@ package frc.robot;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,7 +25,6 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
-import frc.robot.util.TunerConstants;
 import frc.robot.subsystems.AlgaeIntake;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
@@ -55,7 +56,6 @@ public class RobotContainer {
 
   private final PowerDistribution powerDistribution = new PowerDistribution();
 
-  private Trigger intakeLaserBroken = new Trigger(groundIntake::intakeLaserBroken);
   private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
 
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
@@ -80,23 +80,33 @@ public class RobotContainer {
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
 
+    NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
+    NamedCommands.registerCommand("Elevator: L4", elevator.moveToPosition(ElevatorConstants.L4Height).withTimeout(2.5).asProxy());
+    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(1.5).asProxy());
+    NamedCommands.registerCommand("Outtake", outtake.runOuttake().withTimeout(1.5).asProxy());
+    NamedCommands.registerCommand("Elevator: Bottom", elevator.downPosition().withTimeout(2.5).asProxy());
+    NamedCommands.registerCommand("OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(5).asProxy());
+
+
+
     // intakeLaserBroken
     //     .whileTrue(indexer.runIndexer())
     //     .onFalse(
     //         Commands.race(Commands.waitUntil(outtakeLaserBroken), Commands.waitSeconds(4))
     //             .andThen(indexer::stopIndexer));
 
-    new Trigger(outtakeLaserBroken).onTrue(Commands.sequence(
-        Commands.runOnce(()-> driverController.getHID().setRumble(RumbleType.kBothRumble, 1)),
-        Commands.waitSeconds(2),
-        Commands.runOnce(() -> driverController.getHID().setRumble(RumbleType.kBothRumble, 0.0))));
-
-
+    new Trigger(outtakeLaserBroken)
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(
+                    () -> driverController.getHID().setRumble(RumbleType.kBothRumble, 1)),
+                Commands.waitSeconds(2),
+                Commands.runOnce(
+                    () -> driverController.getHID().setRumble(RumbleType.kBothRumble, 0.0))));
   }
 
   private void configureDriverBindings() {
     Trigger slowMode = driverController.leftTrigger();
-    
 
     drivetrain.setDefaultCommand(
         new TeleopSwerve(
@@ -158,6 +168,9 @@ public class RobotContainer {
   }
 
   private void configureElevatorBindings() {
+
+    elevator.setDefaultCommand(elevator.holdPosition());
+
     operatorStick
         .button(OperatorConstants.L4HeightButton)
         .and(armMode.negate())
@@ -174,7 +187,7 @@ public class RobotContainer {
     operatorStick
         .button(OperatorConstants.elevatorDownButton)
         .and(armMode.negate())
-        .onTrue(elevator.moveToPosition(0));
+        .onTrue(elevator.downPosition());
 
     operatorStick
         .button(OperatorConstants.homeElevatorButon)
@@ -219,9 +232,9 @@ public class RobotContainer {
 
   private void configureOuttakeBindings() {
     operatorStick
-        .button(OperatorConstants.outtakeButton)
+        .button(OperatorConstants.outtakeButton) 
         .and(armMode.negate())
-        .whileTrue(outtake.runOuttake())
+        .whileTrue(outtake.runOuttake())//outtake.autoOuttake()
         .onFalse(outtake.stopOuttakeMotor());
   }
 
@@ -234,8 +247,9 @@ public class RobotContainer {
 
     operatorStick
         .button(OperatorConstants.indexerButton)
-        .and(armMode.negate()).and(outtakeLaserBroken.negate())
-        .whileTrue(outtake.intakeUntilBeamBreak())
+        .and(armMode.negate())
+        // .and(outtakeLaserBroken.negate())
+        .whileTrue(outtake.outtakeUntilBeamBreak())
         .onFalse(outtake.stopOuttakeMotor());
 
     operatorStick
@@ -245,8 +259,14 @@ public class RobotContainer {
   }
 
   private void configureAlgaeIntakeBindings() {
-operatorStick.button(OperatorConstants.algaeIntakeUp).whileTrue(algaeIntake.run(algaeIntake::algaeIntakeUp)).onFalse(algaeIntake.runOnce(algaeIntake::stopAlgaeIntake));
-operatorStick.button(OperatorConstants.algaeIntakeDown).whileTrue(algaeIntake.run(algaeIntake::algaeIntakeDown)).onFalse(algaeIntake.runOnce(algaeIntake::stopAlgaeIntake));
+    operatorStick
+        .button(OperatorConstants.algaeIntakeUp)
+        .whileTrue(algaeIntake.run(algaeIntake::algaeIntakeUp))
+        .onFalse(algaeIntake.runOnce(algaeIntake::stopAlgaeIntake));
+    operatorStick
+        .button(OperatorConstants.algaeIntakeDown)
+        .whileTrue(algaeIntake.run(algaeIntake::algaeIntakeDown))
+        .onFalse(algaeIntake.runOnce(algaeIntake::stopAlgaeIntake));
   }
 
   private void configureOperatorBindings() {
@@ -256,9 +276,22 @@ operatorStick.button(OperatorConstants.algaeIntakeDown).whileTrue(algaeIntake.ru
     configureIndexerBindings();
     configureOuttakeBindings();
 
-operatorStick.button(OperatorConstants.startingConfigButton)
-.whileTrue(elevator.downPosition().andThen(arm.armBottom()).andThen(Commands.sequence(algaeIntake.run(algaeIntake::algaeIntakeUp), Commands.waitSeconds(1.5), algaeIntake.runOnce(algaeIntake::stopAlgaeIntake))))
-.onFalse(algaeIntake.runOnce( algaeIntake::stopAlgaeIntake).andThen(elevator.runOnce(elevator::stopElevator)).andThen(arm.runOnce(arm::stopArm)));
+    operatorStick
+        .button(OperatorConstants.startingConfigButton)
+        .whileTrue(
+            elevator
+                .downPosition()
+                .andThen(arm.armBottom())
+                .andThen(
+                    Commands.sequence(
+                        algaeIntake.run(algaeIntake::algaeIntakeUp),
+                        Commands.waitSeconds(1.5),
+                        algaeIntake.runOnce(algaeIntake::stopAlgaeIntake))))
+        .onFalse(
+            algaeIntake
+                .runOnce(algaeIntake::stopAlgaeIntake)
+                .andThen(elevator.runOnce(elevator::stopElevator))
+                .andThen(arm.runOnce(arm::stopArm)));
   }
 
   private void configureAutoChooser() {

@@ -27,14 +27,14 @@ public class Elevator extends ExpandedSubsystem {
   private TalonFX elevatorMainMotor;
 
   private TalonFX elevatorFollowerMotor;
-  private Follower follower;
 
   private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
   private final VoltageOut voltageRequest = new VoltageOut(0.0);
 
   private DigitalInput buttonSwitch = new DigitalInput(ElevatorConstants.buttonSwitchID);
-  // private boolean isZeroed = false;
+  private boolean isZeroed = false;
   private Alert elevatorAlert;
+  private boolean lastButtonState = false;
 
   public Elevator() {
     elevatorMainMotor = new TalonFX(ElevatorConstants.elevatorMainMotorID);
@@ -49,8 +49,8 @@ public class Elevator extends ExpandedSubsystem {
     // elevatorFollowerMotor.setControl(follower);
 
     elevatorAlert = new Alert("Elevator is not Zeroed!", AlertType.kWarning);
-    elevatorMainMotor.setPosition(0.0);
-    elevatorFollowerMotor.setPosition(0.0);
+    // elevatorMainMotor.setPosition(0.0);
+    // elevatorFollowerMotor.setPosition(0.0);
   }
 
   public boolean buttonPressed() {
@@ -86,35 +86,25 @@ public class Elevator extends ExpandedSubsystem {
         .unless(this::buttonPressed);
   }
 
-  public void printMainPosition() {
-    SmartDashboard.putNumber(
-        "Elevator Main Position",
-        Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()));
-  }
-
-  public void printFollowerPosition() {
-    SmartDashboard.putNumber(
-        "Elevator Follower Position",
-        Units.metersToInches(elevatorFollowerMotor.getPosition().getValueAsDouble()));
-  }
 
   public Command moveToPosition(double height) {
-    // return run(() -> elevatorMainMotor.setControl(motionMagicRequest.withPosition(height)))
-    //     .alongWith(
-    //         run(() ->
-    // elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height))));
-    //       .onlyIf(() -> isZeroed)
-    //       .until(this::buttonPressed);
-    return run(() -> {
+    return runOnce(() -> {
           elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
           elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height));
         })
-        // .onlyIf(() -> isZeroed)
-        .until(this::buttonPressed);
+        .onlyIf(() -> isZeroed);
   }
 
   public Command downPosition() {
-    return moveToPosition(ElevatorConstants.downHeight);
+    return moveToPosition(ElevatorConstants.downHeight).until(this::buttonPressed);
+  }
+
+  public Command holdPosition() {
+    return startRun(()-> {
+      elevatorMainMotor.setControl(motionMagicRequest.withPosition(elevatorMainMotor.getPosition().getValueAsDouble()));
+      elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(elevatorFollowerMotor.getPosition().getValueAsDouble()));
+    },
+    ()->elevatorMainMotor.setControl(motionMagicRequest)).withName("Elevator Hold");
   }
 
   private final SysIdRoutine elevatorSysIdRoutine =
@@ -138,24 +128,37 @@ public class Elevator extends ExpandedSubsystem {
     return elevatorSysIdRoutine.dynamic(direction);
   }
 
+
   @Override
   public void periodic() {
-    printMainPosition();
-    printFollowerPosition();
 
+    SmartDashboard.putNumber(
+        "Elevator Main Position",
+        Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()));
+    SmartDashboard.putNumber(
+      "Elevator Follower Position",
+      Units.metersToInches(elevatorFollowerMotor.getPosition().getValueAsDouble()));
     SmartDashboard.putBoolean("Button Pressed", buttonPressed());
-    // System.out.println("The button is pressed:" + buttonPressed());
+    
+    boolean currentButtonState = buttonPressed();
 
-    // if (!isZeroed && buttonPressed()) {
-    //   elevatorMainMotor.setPosition(0, 0);
-    //   isZeroed = true;
-    // }
+    if (currentButtonState && !lastButtonState) {
+    elevatorMainMotor.setPosition(0, 0);
+    isZeroed = true;
+}
 
-    // if (Units.metersToInches(elevatorFollowerMotor.getPosition().getValueAsDouble()) < .5
-    //     && !buttonPressed()) {
-    //   isZeroed = false;
-    // }
+lastButtonState = currentButtonState;
 
-    // elevatorAlert.set(!isZeroed);
+    if (!isZeroed && buttonPressed()) {
+      elevatorMainMotor.setPosition(0, 0);
+      isZeroed = true;
+    }
+
+    if (isZeroed && Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 1
+        && !buttonPressed()) {
+      isZeroed = false;
+    }
+
+    elevatorAlert.set(!isZeroed);
   }
 }

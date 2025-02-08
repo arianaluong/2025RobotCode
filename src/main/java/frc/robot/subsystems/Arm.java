@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -13,15 +12,11 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.AbsoluteEncoderConfig;
-import com.revrobotics.spark.config.ClosedLoopConfig;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
-
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.util.ExpandedSubsystem;
 
@@ -46,19 +41,14 @@ public class Arm extends ExpandedSubsystem {
         .smartCurrentLimit(15)
         .secondaryCurrentLimit(20);
 
-    armConfig
-        .closedLoop
-        .outputRange(-1, 1, ClosedLoopSlot.kSlot0)
-        .p(0)
-        .i(0)
-        .d(0);
+    armConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(0).i(0).d(0);
 
     armConfig
         .closedLoop
         .maxMotion
         .maxVelocity(ArmConstants.armMaxVelocity)
         .maxAcceleration(ArmConstants.armMaxAcceleration);
-        
+
     armConfig
         .softLimit
         .forwardSoftLimit(100)
@@ -70,12 +60,17 @@ public class Arm extends ExpandedSubsystem {
   }
 
   public Command armBottom() {
-    return runOnce(()-> armPIDController.setReference(-100, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
-   
+    return runOnce(
+        () ->
+            armPIDController.setReference(
+                -100, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
   }
 
   public Command armTop() {
-    return runOnce(()-> armPIDController.setReference(100, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
+    return runOnce(
+        () ->
+            armPIDController.setReference(
+                100, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
   }
 
   public void armSpeed(double speed) {

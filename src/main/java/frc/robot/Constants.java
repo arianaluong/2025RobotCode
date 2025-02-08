@@ -314,8 +314,6 @@ public class Constants {
     public static final int armIntakeMotorID = 21;
     public static final int indexerMotorID = 16;
 
-    public static final int intakeLaserCanID = 17;
-
     public static final double indexerMotorSpeed = .85;
     public static final double groundIntakeMotorSpeed = .9;
     public static final double outtakeSpeed = -0.9;

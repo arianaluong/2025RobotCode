@@ -37,9 +37,8 @@ public class Outtake extends ExpandedSubsystem {
   }
 
   public void moveOuttake() {
-    if(!outtakeLaserBroken()) {
+    if (!outtakeLaserBroken()) {
       outtakemotor.set(OuttakeConstants.outtakeSpeed);
-
     }
     outtakemotor.set(0.0);
   }
@@ -48,11 +47,15 @@ public class Outtake extends ExpandedSubsystem {
     return run(this::moveOuttake);
   }
 
-  public Command intakeUntilBeamBreak() {
+  public Command outtakeUntilBeamBreak() {
     return run(this::moveOuttake)
         .until(this::outtakeLaserBroken)
         .unless(this::outtakeLaserBroken)
         .finallyDo(this::stopOuttakeMotor);
+  }
+
+  public Command autoOuttake() {
+    return run(this::moveOuttake).until(() -> !outtakeLaserBroken());
   }
 
   public void stop() {
