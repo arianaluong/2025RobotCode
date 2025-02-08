@@ -23,11 +23,8 @@ public class GroundIntake extends ExpandedSubsystem {
 
   private final double prematchDelay = 2.5;
 
-  private LaserCan intakeLaser;
-
   public GroundIntake() {
     groundIntakeMotor = new SparkMax(IntakeConstants.groundIntakeMotorID, MotorType.kBrushless);
-    intakeLaser = new LaserCan(IntakeConstants.intakeLaserCanID);
 
     SparkMaxConfig groundIntakeConfig = new SparkMaxConfig();
 
@@ -41,31 +38,13 @@ public class GroundIntake extends ExpandedSubsystem {
         groundIntakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public boolean intakeLaserBroken() {
-    LaserCan.Measurement measurement = intakeLaser.getMeasurement();
-    if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-      // System.out.println("The target is " + measurement.distance_mm + "mm away!");
-      // if (measurement.distance_mm < 500) {
-      //   return true;
-      // } else {
-      //   return false;
-      // }
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   public void stopGroundIntake() {
     groundIntakeMotor.set(0);
   }
 
   public void groundIntake() {
-    if (!intakeLaserBroken()) {
       groundIntakeMotor.set(IntakeConstants.groundIntakeMotorSpeed);
-    } else {
-      stopGroundIntake();
-    }
+    
   }
 
   public Command runIntake() {

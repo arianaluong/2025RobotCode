@@ -5,16 +5,12 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.AbsoluteEncoder;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.AbsoluteEncoderConfig;
-import com.revrobotics.spark.config.SoftLimitConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.AlgaeIntakeConstants;
 import frc.robot.Constants.IntakeConstants;
@@ -26,44 +22,43 @@ public class AlgaeIntake extends ExpandedSubsystem {
       new SparkMax(AlgaeIntakeConstants.algaeIntakeMotorID, MotorType.kBrushless);
 
   private AbsoluteEncoder algaeEncoder;
-  
+
   public AlgaeIntake() {
-   algaeEncoder = algaeIntakeMotor.getAbsoluteEncoder();
-  SparkMaxConfig algaeConfig = new SparkMaxConfig();
-   
+    algaeEncoder = algaeIntakeMotor.getAbsoluteEncoder();
+    SparkMaxConfig algaeConfig = new SparkMaxConfig();
+
     algaeConfig
         .inverted(true)
         .smartCurrentLimit(IntakeConstants.intakeCurrentLimit)
         .secondaryCurrentLimit(IntakeConstants.algaeIntakeShutoffCurrentLimit)
-        .idleMode(IdleMode.kBrake); 
+        .idleMode(IdleMode.kBrake);
 
     algaeConfig.absoluteEncoder.inverted(false).positionConversionFactor(360).zeroOffset(0);
 
     algaeConfig
-    .softLimit
-    .forwardSoftLimit(100)
-    .forwardSoftLimitEnabled(true)
-    .reverseSoftLimit(-100)
-    .reverseSoftLimitEnabled(true);
-  
-    algaeIntakeMotor.configure(algaeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        .softLimit
+        .forwardSoftLimit(100)
+        .forwardSoftLimitEnabled(true)
+        .reverseSoftLimit(-100)
+        .reverseSoftLimitEnabled(true);
+
+    algaeIntakeMotor.configure(
+        algaeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  
   public void algaeIntakeUp() {
-    if(algaeEncoder.getPosition() >= 100) {
+    if (algaeEncoder.getPosition() >= 100) {
       algaeIntakeMotor.set(0);
     }
     algaeIntakeMotor.set(AlgaeIntakeConstants.algaeIntakeSpeed);
   }
 
   public void algaeIntakeDown() {
-    if(algaeEncoder.getPosition() <= -100) {
+    if (algaeEncoder.getPosition() <= -100) {
       algaeIntakeMotor.set(0);
     }
     algaeIntakeMotor.set(-AlgaeIntakeConstants.algaeIntakeSpeed);
   }
-
 
   public void stopAlgaeIntake() {
     algaeIntakeMotor.set(0);
