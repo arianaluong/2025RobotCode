@@ -36,15 +36,16 @@ public class Arm extends ExpandedSubsystem {
     armAbsoluteEncoder = armMotor.getAbsoluteEncoder();
     armPIDController = armMotor.getClosedLoopController();
     SparkMaxConfig armConfig = new SparkMaxConfig();
-    FeedbackSensor armSensor;
 
-    armConfig.absoluteEncoder.inverted(false).positionConversionFactor(1).zeroOffset(0);
+    armConfig.absoluteEncoder.inverted(false).positionConversionFactor(360).zeroOffset(0);
     armConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+
     armConfig
         .inverted(false)
         .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(15)
         .secondaryCurrentLimit(20);
+
     armConfig
         .closedLoop
         .outputRange(-1, 1, ClosedLoopSlot.kSlot0)
@@ -60,21 +61,21 @@ public class Arm extends ExpandedSubsystem {
         
     armConfig
         .softLimit
-        .forwardSoftLimit(50)
+        .forwardSoftLimit(100)
         .forwardSoftLimitEnabled(true)
-        .reverseSoftLimit(-50)
+        .reverseSoftLimit(-100)
         .reverseSoftLimitEnabled(true);
 
     armMotor.configure(armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public Command armBottom() {
-    return runOnce(()-> armPIDController.setReference(0, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
+    return runOnce(()-> armPIDController.setReference(-100, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
    
   }
 
   public Command armTop() {
-    return runOnce(()-> armPIDController.setReference(1, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
+    return runOnce(()-> armPIDController.setReference(100, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
   }
 
   public void armSpeed(double speed) {
