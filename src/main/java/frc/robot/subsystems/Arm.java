@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -13,8 +14,10 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.AbsoluteEncoderConfig;
+import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -33,37 +36,34 @@ public class Arm extends ExpandedSubsystem {
     armAbsoluteEncoder = armMotor.getAbsoluteEncoder();
     armPIDController = armMotor.getClosedLoopController();
     SparkMaxConfig armConfig = new SparkMaxConfig();
-    AbsoluteEncoderConfig encoderConfig = new AbsoluteEncoderConfig();
+    FeedbackSensor armSensor;
 
-    encoderConfig.inverted(false).positionConversionFactor(1).zeroOffset(0);
-
-
+    armConfig.absoluteEncoder.inverted(false).positionConversionFactor(1).zeroOffset(0);
+    armConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
     armConfig
         .inverted(false)
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(10)
-        .secondaryCurrentLimit(15);
-    // armConfig.absoluteEncoder.positionConversionFactor(0).velocityConversionFactor(0);
+        .smartCurrentLimit(15)
+        .secondaryCurrentLimit(20);
     armConfig
         .closedLoop
-        // .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
         .outputRange(-1, 1, ClosedLoopSlot.kSlot0)
         .p(0)
         .i(0)
         .d(0);
+
     armConfig
         .closedLoop
         .maxMotion
         .maxVelocity(ArmConstants.armMaxVelocity)
         .maxAcceleration(ArmConstants.armMaxAcceleration);
+        
     armConfig
         .softLimit
         .forwardSoftLimit(50)
         .forwardSoftLimitEnabled(true)
         .reverseSoftLimit(-50)
         .reverseSoftLimitEnabled(true);
-
-    armConfig.absoluteEncoder.apply(encoderConfig);
 
     armMotor.configure(armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
