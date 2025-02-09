@@ -11,10 +11,12 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.OuttakeConstants;
 import frc.robot.util.ExpandedSubsystem;
 
+@Logged
 public class Outtake extends ExpandedSubsystem {
 
   private SparkMax outtakemotor;
@@ -49,8 +51,8 @@ public class Outtake extends ExpandedSubsystem {
 
   public Command outtakeUntilBeamBreak() {
     return run(this::moveOuttake)
-        .until(this::outtakeLaserBroken)
         .unless(this::outtakeLaserBroken)
+        .until(this::outtakeLaserBroken)
         .finallyDo(this::stopOuttakeMotor);
   }
 

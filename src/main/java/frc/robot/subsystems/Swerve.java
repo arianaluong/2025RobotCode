@@ -96,14 +96,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   private Field2d field = new Field2d();
 
-  private Optional<Alliance> alliance;
-
   private int bestTargetID;
-  private double leftPoseX;
-  private double leftPoseY;
-  private double rightPoseX;
-  private double rightPoseY;
-  private double desiredRotation;
+  private Pose2d leftPose;
+  private Pose2d rightPose;
 
   public static record PoseEstimate(Pose3d estimatedPose, double timestamp, Vector<N3> standardDevs)
       implements Comparable<PoseEstimate> {
@@ -273,10 +268,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       arducamSimTwo.enableProcessedStream(true);
 
       SimCameraProperties limelightProperties = new SimCameraProperties();
-      limelightProperties.setCalibration(960, 720, Rotation2d.fromDegrees(97.60));
-      limelightProperties.setCalibError(0.21, 0.10);
-      limelightProperties.setFPS(30); // 30
-      limelightProperties.setAvgLatencyMs(36); // 36
+      limelightProperties.setCalibration(640, 480, Rotation2d.fromDegrees(60)); // 960 720 97
+      limelightProperties.setCalibError(0.58, 0.10);
+      limelightProperties.setFPS(26); // 30
+      limelightProperties.setAvgLatencyMs(70); // 36
       limelightProperties.setLatencyStdDevMs(15);
       limelightProperties.setExposureTimeMs(45);
 
@@ -374,7 +369,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return transforms.get(0);
   }
 
-  public void getAprilTagPose() {
+  public void bestAlignmentPose() {
     List<PhotonPipelineResult> latestResult = latestLimelightResult;
     List<PhotonTrackedTarget> validTargets = new ArrayList<>();
 
@@ -403,7 +398,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     PhotonTrackedTarget bestTarget = validTargets.get(0);
 
     bestTargetID = bestTarget.getFiducialId();
-    desiredRotation = FieldConstants.aprilTagAngles.getOrDefault(bestTargetID, 0.0);
+    Double desiredRotation = FieldConstants.aprilTagAngles.getOrDefault(bestTargetID, 0.0);
     Transform2d bestTransform =
         new Transform2d(
             bestTarget.getBestCameraToTarget().getX(),
@@ -421,33 +416,29 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             FieldConstants.right_aprilTagOffsets.getOrDefault(bestTargetID, 0.0),
             new Rotation2d(0));
 
-    Pose2d leftAprilTagPose =
-        getState()
-            .Pose
-            .transformBy(VisionConstants.limelightTransform2d)
-            .transformBy(
-                new Transform2d(
-                    bestTransform.getTranslation().plus(leftAprilTagOffset.getTranslation()),
-                    new Rotation2d(0)));
+    leftPose =
+        new Pose2d(
+            getState()
+                .Pose
+                .transformBy(VisionConstants.limelightTransform2d)
+                .transformBy(
+                    new Transform2d(
+                        bestTransform.getTranslation().plus(leftAprilTagOffset.getTranslation()),
+                        Rotation2d.fromDegrees(0)))
+                .getTranslation(),
+            Rotation2d.fromDegrees(desiredRotation));
+    rightPose =
+        new Pose2d(
+            getState()
+                .Pose
+                .transformBy(VisionConstants.limelightTransform2d)
+                .transformBy(
+                    new Transform2d(
+                        bestTransform.getTranslation().plus(rightAprilTagOffset.getTranslation()),
+                        Rotation2d.fromDegrees(0)))
+                .getTranslation(),
+            Rotation2d.fromDegrees(desiredRotation));
 
-    leftPoseX = leftAprilTagPose.getX();
-    leftPoseY = leftAprilTagPose.getY();
-
-    Pose2d rightAprilTagPose =
-        getState()
-            .Pose
-            .transformBy(VisionConstants.limelightTransform2d)
-            .transformBy(
-                new Transform2d(
-                    bestTransform.getTranslation().plus(rightAprilTagOffset.getTranslation()),
-                    new Rotation2d(0)));
-    rightPoseX = rightAprilTagPose.getX();
-    rightPoseY = rightAprilTagPose.getY();
-
-    SmartDashboard.putNumber("LEFT POSE X", leftAprilTagPose.getX());
-    SmartDashboard.putNumber("LEFT POSE Y", leftAprilTagPose.getY());
-    SmartDashboard.putNumber("RIGHT POSE X", rightAprilTagPose.getX());
-    SmartDashboard.putNumber("RIGHT POSE Y", rightAprilTagPose.getY());
     SmartDashboard.putNumber("Goal Rotation", desiredRotation);
     SmartDashboard.putNumber("Best Tag ID", bestTargetID);
     SmartDashboard.putNumber("Current Rotation", getState().Pose.getRotation().getDegrees());
@@ -456,11 +447,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   public Command ReefAlign(Boolean leftAlign) {
     return new DeferredCommand(
         () -> {
-          double xGoal = leftAlign ? leftPoseX : rightPoseX;
-          double yGoal = leftAlign ? leftPoseY : rightPoseY;
-          double goalRotation = Units.degreesToRadians(desiredRotation);
-          Pose2d goalPose = new Pose2d(xGoal, yGoal, new Rotation2d(goalRotation));
-
+          Pose2d goalPose = leftAlign ? leftPose : rightPose;
           return AutoBuilder.pathfindToPose(goalPose, SwerveConstants.pathConstraints, 0.0);
         },
         Set.of(this));
@@ -782,12 +769,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   public void periodic() {
     Pose2d robotPose = getState().Pose;
     field.setRobotPose(robotPose);
-    getAprilTagPose();
+    bestAlignmentPose();
     latestarducamLeftResult = arducamLeft.getAllUnreadResults();
     latestarducamRightResult = arducamRight.getAllUnreadResults();
     latestLimelightResult = limelight.getAllUnreadResults();
-
-    alliance = DriverStation.getAlliance();
 
     SmartDashboard.putData("Field", field);
 
