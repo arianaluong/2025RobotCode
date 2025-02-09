@@ -15,19 +15,20 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.util.ExpandedSubsystem;
 
+@Logged
 public class Arm extends ExpandedSubsystem {
   private SparkMax armMotor;
   private SparkClosedLoopController armPIDController;
   private SparkAbsoluteEncoder armAbsoluteEncoder;
 
-  /** Creates a new CoralArmIntake. */
   public Arm() {
-    armMotor = new SparkMax(47, MotorType.kBrushless);
+    armMotor = new SparkMax(ArmConstants.armMotorID, MotorType.kBrushless);
     armAbsoluteEncoder = armMotor.getAbsoluteEncoder();
     armPIDController = armMotor.getClosedLoopController();
     SparkMaxConfig armConfig = new SparkMaxConfig();
@@ -38,8 +39,8 @@ public class Arm extends ExpandedSubsystem {
     armConfig
         .inverted(false)
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(15)
-        .secondaryCurrentLimit(20);
+        .smartCurrentLimit(20)
+        .secondaryCurrentLimit(25);
 
     armConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(0).i(0).d(0);
 

@@ -8,10 +8,10 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.SignalLogger;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.util.ExpandedSubsystem;
 
+@Logged
 public class Elevator extends ExpandedSubsystem {
   /** Creates a new Elevator. */
   private TalonFX elevatorMainMotor;
@@ -86,12 +87,12 @@ public class Elevator extends ExpandedSubsystem {
         .unless(this::buttonPressed);
   }
 
-
   public Command moveToPosition(double height) {
-    return runOnce(() -> {
-          elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
-          elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height));
-        })
+    return runOnce(
+            () -> {
+              elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
+              elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height));
+            })
         .onlyIf(() -> isZeroed);
   }
 
@@ -100,11 +101,17 @@ public class Elevator extends ExpandedSubsystem {
   }
 
   public Command holdPosition() {
-    return startRun(()-> {
-      elevatorMainMotor.setControl(motionMagicRequest.withPosition(elevatorMainMotor.getPosition().getValueAsDouble()));
-      elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(elevatorFollowerMotor.getPosition().getValueAsDouble()));
-    },
-    ()->elevatorMainMotor.setControl(motionMagicRequest)).withName("Elevator Hold");
+    return startRun(
+            () -> {
+              elevatorMainMotor.setControl(
+                  motionMagicRequest.withPosition(
+                      elevatorMainMotor.getPosition().getValueAsDouble()));
+              elevatorFollowerMotor.setControl(
+                  motionMagicRequest.withPosition(
+                      elevatorFollowerMotor.getPosition().getValueAsDouble()));
+            },
+            () -> elevatorMainMotor.setControl(motionMagicRequest))
+        .withName("Elevator Hold");
   }
 
   private final SysIdRoutine elevatorSysIdRoutine =
@@ -128,7 +135,6 @@ public class Elevator extends ExpandedSubsystem {
     return elevatorSysIdRoutine.dynamic(direction);
   }
 
-
   @Override
   public void periodic() {
 
@@ -136,25 +142,26 @@ public class Elevator extends ExpandedSubsystem {
         "Elevator Main Position",
         Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()));
     SmartDashboard.putNumber(
-      "Elevator Follower Position",
-      Units.metersToInches(elevatorFollowerMotor.getPosition().getValueAsDouble()));
+        "Elevator Follower Position",
+        Units.metersToInches(elevatorFollowerMotor.getPosition().getValueAsDouble()));
     SmartDashboard.putBoolean("Button Pressed", buttonPressed());
-    
+
     boolean currentButtonState = buttonPressed();
 
     if (currentButtonState && !lastButtonState) {
-    elevatorMainMotor.setPosition(0, 0);
-    isZeroed = true;
-}
+      elevatorMainMotor.setPosition(0, 0);
+      isZeroed = true;
+    }
 
-lastButtonState = currentButtonState;
+    lastButtonState = currentButtonState;
 
     if (!isZeroed && buttonPressed()) {
       elevatorMainMotor.setPosition(0, 0);
       isZeroed = true;
     }
 
-    if (isZeroed && Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 1
+    if (isZeroed
+        && Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 1
         && !buttonPressed()) {
       isZeroed = false;
     }

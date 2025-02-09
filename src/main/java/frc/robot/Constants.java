@@ -130,7 +130,7 @@ public class Constants {
     public static final Transform3d limelightTransform =
         new Transform3d(
             Units.inchesToMeters(12.525),
-            Units.inchesToMeters(1),
+            Units.inchesToMeters(.5),
             Units.inchesToMeters(4.423),
             new Rotation3d(0.0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
 
@@ -338,7 +338,7 @@ public class Constants {
 
   public static class AlgaeIntakeConstants {
     public static final int algaeIntakeMotorID = 20;
-    public static final double algaeIntakeSpeed = .5;
+    public static final double algaeIntakeSpeed = .2;
   }
 
   public static class ElevatorConstants {
@@ -414,6 +414,7 @@ public class Constants {
   }
 
   public static class ArmConstants {
+    public static final int armMotorID = 47;
     public static final int armMaxVelocity = 0;
     public static final int armMaxAcceleration = 0;
 

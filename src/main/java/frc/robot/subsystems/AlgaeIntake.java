@@ -9,21 +9,24 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.AlgaeIntakeConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.util.ExpandedSubsystem;
 
+@Logged
 public class AlgaeIntake extends ExpandedSubsystem {
   /** Creates a new AlgaeIntake. */
-  private SparkMax algaeIntakeMotor =
-      new SparkMax(AlgaeIntakeConstants.algaeIntakeMotorID, MotorType.kBrushless);
+  private SparkMax algaeIntakeMotor;
 
   private AbsoluteEncoder algaeEncoder;
 
   public AlgaeIntake() {
+    algaeIntakeMotor = new SparkMax(AlgaeIntakeConstants.algaeIntakeMotorID, MotorType.kBrushless);
     algaeEncoder = algaeIntakeMotor.getAbsoluteEncoder();
     SparkMaxConfig algaeConfig = new SparkMaxConfig();
 
@@ -34,6 +37,8 @@ public class AlgaeIntake extends ExpandedSubsystem {
         .idleMode(IdleMode.kBrake);
 
     algaeConfig.absoluteEncoder.inverted(false).positionConversionFactor(360).zeroOffset(0);
+
+    algaeConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
     algaeConfig
         .softLimit
