@@ -39,10 +39,13 @@ public class Elevator extends ExpandedSubsystem {
   private boolean lastButtonState = false;
   private Debouncer buttonDebouncer = new Debouncer(.15);
   private Debouncer elevatorDebouncer = new Debouncer(.25);
+  private Debouncer zeroedDebouncer = new Debouncer(2.5);
 
   private double currentPosition;
+  private double positionTolerance = Units.inchesToMeters(1);
 
   public Elevator() {
+    SignalLogger.setPath("ctre-logs");
     elevatorMainMotor = new TalonFX(ElevatorConstants.elevatorMainMotorID);
     elevatorFollowerMotor = new TalonFX(ElevatorConstants.elevatorFollowerMotorID);
     // follower = new Follower(ElevatorConstants.elevatorMainMotorID, false);
@@ -52,8 +55,8 @@ public class Elevator extends ExpandedSubsystem {
     // elevatorFollowerMotor.setControl(follower);
 
     elevatorAlert = new Alert("Elevator is not Zeroed!", AlertType.kWarning);
-    elevatorMainMotor.setPosition(0.0);
-    elevatorFollowerMotor.setPosition(0.0);
+    // elevatorMainMotor.setPosition(0.0);
+    // elevatorFollowerMotor.setPosition(0.0);
   }
 
   public boolean buttonPressed() {
@@ -65,7 +68,7 @@ public class Elevator extends ExpandedSubsystem {
         .until(() -> buttonDebouncer.calculate(buttonPressed()))
         .unless(() -> buttonDebouncer.calculate(buttonPressed()))
         .finallyDo(this::stopElevator)
-        .withName("home elevator");
+        .withName("Home elevator");
   }
 
   public void stopElevator() {
@@ -90,26 +93,25 @@ public class Elevator extends ExpandedSubsystem {
   }
 
   public Command moveToPosition(double height) {
-    return run(
+    return runOnce(
         () -> {
           elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
           elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height));
-        });
-    // .until(() -> elevatorDebouncer.calculate(atSetPoint(height)));
-    // .onlyIf(() -> isZeroed);
+        })
+    .until(() ->(atSetPoint(height)))
+    .onlyIf(() -> isZeroed)
+    .finallyDo(this::holdPosition);
   }
 
   public Command downPosition() {
-    return moveToPosition(ElevatorConstants.downHeight);
-    // .andThen(downSpeed(.03).until(() -> buttonDebouncer.calculate(buttonPressed())));
+    return moveToPosition(ElevatorConstants.downHeight)
+    .andThen(downSpeed(.03).until(() -> buttonDebouncer.calculate(buttonPressed())));
   }
 
-  // public boolean atSetPoint(double height) {
-  //   if (Math.abs(height - elevatorMainMotor.getPosition().getValueAsDouble()) < .5) {
-  //     return true;
-  //   }
-  //   return false;
-  // }
+  public boolean atSetPoint(double targetHeight) {
+    return elevatorDebouncer.calculate(Math.abs(targetHeight - elevatorMainMotor.getPosition().getValueAsDouble()) < positionTolerance);
+
+  }
 
   public Command holdPosition() {
     return startRun(
@@ -159,26 +161,26 @@ public class Elevator extends ExpandedSubsystem {
         Units.metersToInches(elevatorFollowerMotor.getPosition().getValueAsDouble()));
     SmartDashboard.putBoolean("Button Pressed", buttonPressed());
 
-    // boolean currentButtonState = buttonPressed();
+    boolean currentButtonState = buttonPressed();
 
-    // if (currentButtonState && !lastButtonState) {
-    //   elevatorMainMotor.setPosition(0, 0);
-    //   isZeroed = true;
-    // }
+    if (currentButtonState && !lastButtonState) {
+      elevatorMainMotor.setPosition(0, 0);
+      isZeroed = true;
+    }
 
-    // lastButtonState = currentButtonState;
+    lastButtonState = currentButtonState;
 
     // if (!isZeroed && buttonPressed()) {
     //   elevatorMainMotor.setPosition(0, 0);
     //   isZeroed = true;
     // }
 
-    // if (isZeroed
-    //     && Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 1
-    //     && !buttonPressed()) {
-    //   isZeroed = false;
-    // }
+    if (isZeroed
+        && zeroedDebouncer.calculate(Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 1)
+        && !buttonPressed()) {
+      isZeroed = false;
+    }
 
-    // elevatorAlert.set(!isZeroed);
+    elevatorAlert.set(!isZeroed);
   }
 }

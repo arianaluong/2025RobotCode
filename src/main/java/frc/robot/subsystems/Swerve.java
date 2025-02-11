@@ -45,7 +45,7 @@ import frc.robot.Constants.FieldConstants.ReefDefinitePoses;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.util.AllianceUtil;
-import frc.robot.util.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.TunerConstants.TunerSwerveDrivetrain;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -442,13 +442,21 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     SmartDashboard.putNumber("Goal Rotation", desiredRotation);
     SmartDashboard.putNumber("Best Tag ID", bestTargetID);
     SmartDashboard.putNumber("Current Rotation", getState().Pose.getRotation().getDegrees());
+
+    SmartDashboard.putNumber("Right X Pose", rightPose.getX());
+    SmartDashboard.putNumber("Right Y Pose", rightPose.getY());
+    SmartDashboard.putNumber("Left X Pose", leftPose.getX());
+    SmartDashboard.putNumber("Left Y Pose", leftPose.getY());
   }
 
   public Command ReefAlign(Boolean leftAlign) {
     return new DeferredCommand(
         () -> {
           Pose2d goalPose = leftAlign ? leftPose : rightPose;
-          return AutoBuilder.pathfindToPose(goalPose, SwerveConstants.pathConstraints, 0.0);
+          SmartDashboard.putNumber("Attempted Pose X", goalPose.getX());
+          SmartDashboard.putNumber("Attempted Pose Y", goalPose.getY());
+          return new InstantCommand();
+          // return AutoBuilder.pathfindToPose(goalPose, SwerveConstants.pathConstraints, 0.0);
         },
         Set.of(this));
   }

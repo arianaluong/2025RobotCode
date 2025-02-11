@@ -51,7 +51,7 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandJoystick operatorStick = new CommandJoystick(1);
 
-  public final Swerve drivetrain = frc.robot.util.TunerConstants.createDrivetrain();
+  public final Swerve drivetrain = frc.robot.TunerConstants.createDrivetrain();
 
   private final PowerDistribution powerDistribution = new PowerDistribution();
 
@@ -141,19 +141,19 @@ public class RobotContainer {
     driverController
         .leftBumper()
         .whileTrue(
-            Commands.sequence(
+            // Commands.sequence(
                 // drivetrain.pathFindToSetup(),
                 // new TurnToReef(drivetrain),
                 // Commands.waitSeconds(.08),
-                drivetrain.ReefAlign(true)));
+                drivetrain.ReefAlign(true));
     driverController
         .rightBumper()
         .whileTrue(
-            Commands.sequence(
+            // Commands.sequence(
                 // drivetrain.pathFindToSetup(),
                 // new TurnToReef(drivetrain),
                 // Commands.waitSeconds(.08),
-                drivetrain.ReefAlign(false)));
+                drivetrain.ReefAlign(false));
 
     // driverController.leftBumper().whileTrue(drivetrain.ReefAlignNoVision(true));
 
@@ -175,7 +175,7 @@ public class RobotContainer {
     operatorStick
         .button(OperatorConstants.L4HeightButton)
         .and(armMode.negate())
-        .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height).andThen(elevator.upSpeed(.03).withTimeout(1)));
     operatorStick
         .button(OperatorConstants.L3HeightButton)
         .and(armMode.negate())
