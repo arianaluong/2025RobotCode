@@ -39,10 +39,7 @@ public class Outtake extends ExpandedSubsystem {
   }
 
   public void moveOuttake() {
-    if (!outtakeLaserBroken()) {
-      outtakemotor.set(OuttakeConstants.outtakeSpeed);
-    }
-    outtakemotor.set(0.0);
+    outtakemotor.set(OuttakeConstants.outtakeSpeed);
   }
 
   public Command runOuttake() {
@@ -53,11 +50,11 @@ public class Outtake extends ExpandedSubsystem {
     return run(this::moveOuttake)
         .unless(this::outtakeLaserBroken)
         .until(this::outtakeLaserBroken)
-        .finallyDo(this::stopOuttakeMotor);
+        .finallyDo(this::stop);
   }
 
   public Command autoOuttake() {
-    return run(this::moveOuttake).until(() -> !outtakeLaserBroken());
+    return run(this::moveOuttake).until(() -> !outtakeLaserBroken()).finallyDo(this::stop);
   }
 
   public void stop() {
@@ -72,7 +69,7 @@ public class Outtake extends ExpandedSubsystem {
     LaserCan.Measurement measurement = outtakeLaser.getMeasurement();
     if (measurement != null
         && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT
-        && measurement.distance_mm < 100) {
+        && measurement.distance_mm < 50) {
       return true;
     } else {
       return false;
