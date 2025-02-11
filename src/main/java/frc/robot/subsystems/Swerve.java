@@ -223,7 +223,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    configureAutoBuilder();
+    // configureAutoBuilder();
   }
 
   /**
@@ -282,7 +282,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       limelightSim.enableProcessedStream(true);
       limelightSim.enableDrawWireframe(true);
     }
-    configureAutoBuilder();
+    // configureAutoBuilder();
   }
 
   /**
@@ -316,7 +316,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    configureAutoBuilder();
+    // configureAutoBuilder();
   }
 
   public void configureAutoBuilder() {

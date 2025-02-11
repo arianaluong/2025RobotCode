@@ -12,6 +12,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -36,22 +37,23 @@ public class Elevator extends ExpandedSubsystem {
   private boolean isZeroed = false;
   private Alert elevatorAlert;
   private boolean lastButtonState = false;
+  private Debouncer buttonDebouncer = new Debouncer(.15);
+  private Debouncer elevatorDebouncer = new Debouncer(.25);
+
+  private double currentPosition;
 
   public Elevator() {
     elevatorMainMotor = new TalonFX(ElevatorConstants.elevatorMainMotorID);
     elevatorFollowerMotor = new TalonFX(ElevatorConstants.elevatorFollowerMotorID);
     // follower = new Follower(ElevatorConstants.elevatorMainMotorID, false);
-
-    // currentPosition.setUpdateFrequency(50);
-
     elevatorMainMotor.getConfigurator().apply(ElevatorConstants.elevatorConfigs);
     elevatorFollowerMotor.getConfigurator().apply(ElevatorConstants.elevatorConfigs);
 
     // elevatorFollowerMotor.setControl(follower);
 
     elevatorAlert = new Alert("Elevator is not Zeroed!", AlertType.kWarning);
-    // elevatorMainMotor.setPosition(0.0);
-    // elevatorFollowerMotor.setPosition(0.0);
+    elevatorMainMotor.setPosition(0.0);
+    elevatorFollowerMotor.setPosition(0.0);
   }
 
   public boolean buttonPressed() {
@@ -59,10 +61,11 @@ public class Elevator extends ExpandedSubsystem {
   }
 
   public Command homeElevator() {
-    return downSpeed(0.2)
-        .until(this::buttonPressed)
-        .unless(this::buttonPressed)
-        .finallyDo(this::stopElevator);
+    return downSpeed(0.1)
+        .until(() -> buttonDebouncer.calculate(buttonPressed()))
+        .unless(() -> buttonDebouncer.calculate(buttonPressed()))
+        .finallyDo(this::stopElevator)
+        .withName("home elevator");
   }
 
   public void stopElevator() {
@@ -79,26 +82,34 @@ public class Elevator extends ExpandedSubsystem {
   }
 
   public Command downSpeed(double speed) {
-    return run(() -> {
+    return run(
+        () -> {
           elevatorMainMotor.set(-speed);
           elevatorFollowerMotor.set(-speed);
-        })
-        .until(this::buttonPressed)
-        .unless(this::buttonPressed);
+        });
   }
 
   public Command moveToPosition(double height) {
-    return runOnce(
-            () -> {
-              elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
-              elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height));
-            })
-        .onlyIf(() -> isZeroed);
+    return run(
+        () -> {
+          elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
+          elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height));
+        });
+    // .until(() -> elevatorDebouncer.calculate(atSetPoint(height)));
+    // .onlyIf(() -> isZeroed);
   }
 
   public Command downPosition() {
-    return moveToPosition(ElevatorConstants.downHeight).until(this::buttonPressed);
+    return moveToPosition(ElevatorConstants.downHeight);
+    // .andThen(downSpeed(.03).until(() -> buttonDebouncer.calculate(buttonPressed())));
   }
+
+  // public boolean atSetPoint(double height) {
+  //   if (Math.abs(height - elevatorMainMotor.getPosition().getValueAsDouble()) < .5) {
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
   public Command holdPosition() {
     return startRun(
@@ -123,7 +134,10 @@ public class Elevator extends ExpandedSubsystem {
               // Log state with SignalLogger class
               state -> SignalLogger.writeString("SysIdElevator_State", state.toString())),
           new SysIdRoutine.Mechanism(
-              (volts) -> elevatorMainMotor.setControl(voltageRequest.withOutput(volts.in(Volts))),
+              (volts) -> {
+                elevatorMainMotor.setControl(voltageRequest.withOutput(volts.in(Volts)));
+                elevatorFollowerMotor.setControl(voltageRequest.withOutput(volts.in(Volts)));
+              },
               null,
               this));
 
@@ -137,7 +151,6 @@ public class Elevator extends ExpandedSubsystem {
 
   @Override
   public void periodic() {
-
     SmartDashboard.putNumber(
         "Elevator Main Position",
         Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()));
@@ -146,26 +159,26 @@ public class Elevator extends ExpandedSubsystem {
         Units.metersToInches(elevatorFollowerMotor.getPosition().getValueAsDouble()));
     SmartDashboard.putBoolean("Button Pressed", buttonPressed());
 
-    boolean currentButtonState = buttonPressed();
+    // boolean currentButtonState = buttonPressed();
 
-    if (currentButtonState && !lastButtonState) {
-      elevatorMainMotor.setPosition(0, 0);
-      isZeroed = true;
-    }
+    // if (currentButtonState && !lastButtonState) {
+    //   elevatorMainMotor.setPosition(0, 0);
+    //   isZeroed = true;
+    // }
 
-    lastButtonState = currentButtonState;
+    // lastButtonState = currentButtonState;
 
-    if (!isZeroed && buttonPressed()) {
-      elevatorMainMotor.setPosition(0, 0);
-      isZeroed = true;
-    }
+    // if (!isZeroed && buttonPressed()) {
+    //   elevatorMainMotor.setPosition(0, 0);
+    //   isZeroed = true;
+    // }
 
-    if (isZeroed
-        && Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 1
-        && !buttonPressed()) {
-      isZeroed = false;
-    }
+    // if (isZeroed
+    //     && Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 1
+    //     && !buttonPressed()) {
+    //   isZeroed = false;
+    // }
 
-    elevatorAlert.set(!isZeroed);
+    // elevatorAlert.set(!isZeroed);
   }
 }

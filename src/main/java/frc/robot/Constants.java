@@ -108,7 +108,7 @@ public class Constants {
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
 
-    public static final String limelightName = "limelight";
+    public static final String limelightName = "LemonLime";
     public static final String arducamLeftName = "Arducam_Left";
     public static final String arducamRightName = "Arducam_Right";
 
@@ -316,7 +316,7 @@ public class Constants {
 
     public static final double indexerMotorSpeed = .85;
     public static final double groundIntakeMotorSpeed = .9;
-    public static final double outtakeSpeed = -0.9;
+    public static final double outtakeSpeed = -1.0;
 
     public static final int indexerCurrentLimit = 30;
     public static final double indexerShutOffLimit = 45;
@@ -349,11 +349,11 @@ public class Constants {
     public static final int elevatorFollowerMotorID = 49;
     public static final int buttonSwitchID = 0;
 
-    public static final double maxHeight = Units.inchesToMeters(28.3);
+    public static final double maxHeight = Units.inchesToMeters(28.4);
     public static final double minHeight = 0.0;
 
-    public static final double L4Height = Units.inchesToMeters(28.25);
-    public static final double L3Height = Units.inchesToMeters(20);
+    public static final double L4Height = Units.inchesToMeters(28.353);
+    public static final double L3Height = Units.inchesToMeters(22);
     public static final double L2Height = Units.inchesToMeters(10);
     public static final double downHeight = Units.inchesToMeters(0);
 
@@ -373,10 +373,10 @@ public class Constants {
     public static final Slot0Configs slot0Configs =
         new Slot0Configs()
             .withKS(0.01)
-            .withKV(5.16) // 5.14
+            .withKV(4.14) // 5.14
             .withKA(0.03) // .04
-            .withKG(0.25) // .31
-            .withKP(13)
+            .withKG(0.31) // .31
+            .withKP(12)
             .withKI(0.0)
             .withKD(.25) // 1
             .withGravityType(GravityTypeValue.Elevator_Static)

@@ -67,7 +67,7 @@ public class TurnToReef extends Command {
 
   @Override
   public boolean isFinished() {
-    return Math.abs(rotationController.getPositionError()) < Math.toRadians(3);
+    return Math.abs(rotationController.getError()) < Math.toRadians(3);
   }
 
   @Override
