@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import au.grapplerobotics.CanBridge;
 import com.ctre.phoenix6.CANBus.CANBusStatus;
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.commands.PathfindingCommand;

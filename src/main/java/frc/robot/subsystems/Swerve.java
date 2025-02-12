@@ -23,11 +23,9 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -595,7 +593,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     Optional<Pose2d> poseAtTime = samplePoseAt(timestampSeconds);
-    Rotation2d angleAtTime = poseAtTime.map(Pose2d::getRotation).orElse(getState().Pose.getRotation());
+    Rotation2d angleAtTime =
+        poseAtTime.map(Pose2d::getRotation).orElse(getState().Pose.getRotation());
 
     Rotation2d angleDifference = angleAtTime.minus(visionPose.getRotation().toRotation2d());
 

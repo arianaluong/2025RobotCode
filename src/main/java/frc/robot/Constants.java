@@ -316,7 +316,7 @@ public class Constants {
 
     public static final double indexerMotorSpeed = .85;
     public static final double groundIntakeMotorSpeed = .9;
-    public static final double outtakeSpeed = -1.0;
+    public static final double outtakeSpeed = -.7;
 
     public static final int indexerCurrentLimit = 30;
     public static final double indexerShutOffLimit = 45;

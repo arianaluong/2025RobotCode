@@ -72,6 +72,7 @@ public class RobotContainer {
   Command swervePrematch = new InstantCommand();
 
   public RobotContainer() {
+    drivetrain.configureAutoBuilder();
 
     configureDriverBindings();
     configureOperatorBindings();
@@ -89,8 +90,6 @@ public class RobotContainer {
         "Elevator: Bottom", elevator.downPosition().withTimeout(3).asProxy());
     NamedCommands.registerCommand(
         "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(5).asProxy());
-
-    drivetrain.configureAutoBuilder();
 
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());

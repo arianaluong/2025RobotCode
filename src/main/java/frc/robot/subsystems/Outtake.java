@@ -69,7 +69,7 @@ public class Outtake extends ExpandedSubsystem {
     LaserCan.Measurement measurement = outtakeLaser.getMeasurement();
     if (measurement != null
         && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT
-        && measurement.distance_mm < 50) {
+        && measurement.distance_mm < 100) {
       return true;
     } else {
       return false;
