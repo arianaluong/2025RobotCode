@@ -10,6 +10,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -53,11 +54,12 @@ public class RobotContainer {
 
   public final Swerve drivetrain = frc.robot.TunerConstants.createDrivetrain();
 
-  private final PowerDistribution powerDistribution = new PowerDistribution();
+  private final PowerDistribution powerDistribution = new PowerDistribution(1, ModuleType.kRev);
 
   private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
 
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
+  private Trigger elevatorIsDown = new Trigger(elevator::elevatorIsDown);
   private Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
 
   // Just put a bunch of instantcommands as placeholders for now
@@ -70,22 +72,25 @@ public class RobotContainer {
   Command swervePrematch = new InstantCommand();
 
   public RobotContainer() {
-    NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
-    NamedCommands.registerCommand(
-        "Elevator: L4",
-        elevator.moveToPosition(ElevatorConstants.L4Height).withTimeout(2.5).asProxy());
-    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(1.5).asProxy());
-    NamedCommands.registerCommand("Outtake", outtake.runOuttake().withTimeout(1.5).asProxy());
-    NamedCommands.registerCommand(
-        "Elevator: Bottom", elevator.downPosition().withTimeout(2.5).asProxy());
-    NamedCommands.registerCommand(
-        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(5).asProxy());
-    drivetrain.configureAutoBuilder();
 
     configureDriverBindings();
     configureOperatorBindings();
     configureAutoChooser();
     configureBatteryChooser();
+
+    NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
+    NamedCommands.registerCommand("Stop Intake", indexer.stop().asProxy());
+    NamedCommands.registerCommand(
+        "Elevator: L4",
+        elevator.moveToPosition(ElevatorConstants.L4Height).withTimeout(3).asProxy());
+    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(1.5).asProxy());
+    NamedCommands.registerCommand("Outtake", outtake.runOuttake().withTimeout(1.5).asProxy());
+    NamedCommands.registerCommand(
+        "Elevator: Bottom", elevator.downPosition().withTimeout(3).asProxy());
+    NamedCommands.registerCommand(
+        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(5).asProxy());
+
+    drivetrain.configureAutoBuilder();
 
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
@@ -142,18 +147,18 @@ public class RobotContainer {
         .leftBumper()
         .whileTrue(
             // Commands.sequence(
-                // drivetrain.pathFindToSetup(),
-                // new TurnToReef(drivetrain),
-                // Commands.waitSeconds(.08),
-                drivetrain.ReefAlign(true));
+            // drivetrain.pathFindToSetup(),
+            // new TurnToReef(drivetrain),
+            // Commands.waitSeconds(.08),
+            drivetrain.ReefAlign(true));
     driverController
         .rightBumper()
         .whileTrue(
             // Commands.sequence(
-                // drivetrain.pathFindToSetup(),
-                // new TurnToReef(drivetrain),
-                // Commands.waitSeconds(.08),
-                drivetrain.ReefAlign(false));
+            // drivetrain.pathFindToSetup(),
+            // new TurnToReef(drivetrain),
+            // Commands.waitSeconds(.08),
+            drivetrain.ReefAlign(false));
 
     // driverController.leftBumper().whileTrue(drivetrain.ReefAlignNoVision(true));
 
@@ -175,7 +180,8 @@ public class RobotContainer {
     operatorStick
         .button(OperatorConstants.L4HeightButton)
         .and(armMode.negate())
-        .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height).andThen(elevator.upSpeed(.03).withTimeout(1)));
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+    // .andThen(elevator.upSpeed(.1).withTimeout(.35)));
     operatorStick
         .button(OperatorConstants.L3HeightButton)
         .and(armMode.negate())
@@ -242,6 +248,7 @@ public class RobotContainer {
     operatorStick
         .button(OperatorConstants.indexerButton)
         .and(armMode.negate())
+        .and(elevatorIsDown)
         .whileTrue(indexer.runIndexer())
         .onFalse(indexer.stop());
 

@@ -44,8 +44,8 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.FieldConstants.ReefDefinitePoses;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.util.AllianceUtil;
 import frc.robot.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.util.AllianceUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,8 +91,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private final SwerveRequest.ApplyRobotSpeeds pathApplyRobotSpeeds =
       new SwerveRequest.ApplyRobotSpeeds().withDriveRequestType(DriveRequestType.Velocity);
 
-  private TimeInterpolatableBuffer<Rotation2d> rotationBuffer =
-      TimeInterpolatableBuffer.createBuffer(1.5);
+  // private TimeInterpolatableBuffer<Rotation2d> rotationBuffer =
+  //     TimeInterpolatableBuffer.createBuffer(1.5);
 
   private Field2d field = new Field2d();
 
@@ -134,8 +134,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
           VisionConstants.limelightTransform);
 
-  private List<PhotonPipelineResult> latestarducamLeftResult;
-  private List<PhotonPipelineResult> latestarducamRightResult;
+  private List<PhotonPipelineResult> latestArducamLeftResult;
+  private List<PhotonPipelineResult> latestArducamRightResult;
   public List<PhotonPipelineResult> latestLimelightResult = new ArrayList<>();
 
   public Transform2d bestAprilTagTransform;
@@ -147,8 +147,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private PhotonCameraSim limelightSim;
 
   private VisionSystemSim visionSim;
-
-  private NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
   public List<Pose3d> detectedTargets = new ArrayList<>();
   public List<Integer> detectedAprilTags = new ArrayList<>();
@@ -354,21 +352,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     SmartDashboard.putData("Swerve/Field", field);
   }
 
-  public static Transform2d getBestTransform(List<Transform2d> transforms) {
-    // Define a comparator to sort transforms by their magnitude
-    Comparator<Transform2d> comparator =
-        Comparator.comparingDouble(
-            transform ->
-                transform.getTranslation().getNorm()
-                    + Math.abs(transform.getRotation().getRadians()));
-
-    // Sort the list of transforms in ascending order of magnitude
-    Collections.sort(transforms, comparator);
-
-    // Return the first transform (which has the smallest magnitude)
-    return transforms.get(0);
-  }
-
   public void bestAlignmentPose() {
     List<PhotonPipelineResult> latestResult = latestLimelightResult;
     List<PhotonTrackedTarget> validTargets = new ArrayList<>();
@@ -566,11 +549,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return run(() -> this.setControl(requestSupplier.get()));
   }
 
-  public Optional<Rotation2d> getRotationAtTime(double time) {
-    Optional<Rotation2d> rotationAtTime = rotationBuffer.getSample(time);
-    return rotationAtTime;
-  }
-
   public Pose3d getarducamLeftPose() {
     return new Pose3d(getState().Pose).plus(VisionConstants.arducamLeftTransform);
   }
@@ -616,12 +594,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       return false;
     }
 
-    Optional<Rotation2d> angleAtTime = getRotationAtTime(timestampSeconds);
-    if (angleAtTime.isEmpty()) {
-      angleAtTime = Optional.of(getState().Pose.getRotation());
-    }
+    Optional<Pose2d> poseAtTime = samplePoseAt(timestampSeconds);
+    Rotation2d angleAtTime = poseAtTime.map(Pose2d::getRotation).orElse(getState().Pose.getRotation());
 
-    Rotation2d angleDifference = angleAtTime.get().minus(visionPose.getRotation().toRotation2d());
+    Rotation2d angleDifference = angleAtTime.minus(visionPose.getRotation().toRotation2d());
 
     double angleTolerance =
         DriverStation.isAutonomous() ? 8.0 : (detectedTargets >= 2) ? 25.0 : 15.0;
@@ -698,12 +674,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     rejectedPoses.clear();
 
     updateVisionPoses(
-        latestarducamLeftResult,
+        latestArducamLeftResult,
         arducamLeftPoseEstimator,
         VisionConstants.arducamLeftTransform,
         Units.inchesToMeters(2.5));
     updateVisionPoses(
-        latestarducamRightResult,
+        latestArducamRightResult,
         arducamRightPoseEstimator,
         VisionConstants.arducamRightTransform,
         Units.inchesToMeters(2.5));
@@ -718,7 +694,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     for (PoseEstimate poseEstimate : poseEstimates) {
       addVisionMeasurement(
           poseEstimate.estimatedPose().toPose2d(),
-          poseEstimate.timestamp(),
+          Utils.fpgaToCurrentTime(poseEstimate.timestamp()),
           poseEstimate.standardDevs());
     }
 
@@ -735,11 +711,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   public List<PhotonPipelineResult> getarducamLeftResults() {
-    return latestarducamLeftResult;
+    return latestArducamLeftResult;
   }
 
   public List<PhotonPipelineResult> getarducamRightResults() {
-    return latestarducamRightResult;
+    return latestArducamRightResult;
   }
 
   /**
@@ -775,16 +751,19 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   @Override
   public void periodic() {
-    Pose2d robotPose = getState().Pose;
-    field.setRobotPose(robotPose);
-    bestAlignmentPose();
-    latestarducamLeftResult = arducamLeft.getAllUnreadResults();
-    latestarducamRightResult = arducamRight.getAllUnreadResults();
+    // long periodicSTART = System.nanoTime();
+    field.setRobotPose(getState().Pose);
+
+    latestArducamLeftResult = arducamLeft.getAllUnreadResults();
+    latestArducamRightResult = arducamRight.getAllUnreadResults();
     latestLimelightResult = limelight.getAllUnreadResults();
 
-    SmartDashboard.putData("Field", field);
-
     updateVisionPoseEstimates();
+    bestAlignmentPose();
+
+    // long periodicEND = System.nanoTime();
+    // SmartDashboard.putNumber("Periodic Run Time (ms)", (periodicSTART - periodicEND) /
+    // (1000000));
 
     /*
      * Periodically try to apply the operator perspective.
@@ -814,18 +793,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     field.getObject("EstimatedRobot").setPose(robotPose);
 
     visionSim.update(robotPose);
-
-    if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
-      DriverStation.getAlliance()
-          .ifPresent(
-              allianceColor -> {
-                setOperatorPerspectiveForward(
-                    allianceColor == Alliance.Red
-                        ? kRedAlliancePerspectiveRotation
-                        : kBlueAlliancePerspectiveRotation);
-                m_hasAppliedOperatorPerspective = true;
-              });
-    }
   }
 
   private void startSimThread() {

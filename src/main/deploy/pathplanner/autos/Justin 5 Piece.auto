@@ -106,6 +106,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Stop Indexer"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Justin 5 Piece.3"
@@ -204,6 +210,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Indexer"
           }
         },
         {
@@ -308,6 +320,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Stop Indexer"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Justin 5 Piece.9"
@@ -406,6 +424,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Indexer"
           }
         },
         {

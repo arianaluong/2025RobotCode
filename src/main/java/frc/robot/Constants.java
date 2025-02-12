@@ -349,12 +349,12 @@ public class Constants {
     public static final int elevatorFollowerMotorID = 49;
     public static final int buttonSwitchID = 0;
 
-    public static final double maxHeight = Units.inchesToMeters(28.4);
+    public static final double maxHeight = Units.inchesToMeters(28.10);
     public static final double minHeight = 0.0;
 
-    public static final double L4Height = Units.inchesToMeters(28.353);
-    public static final double L3Height = Units.inchesToMeters(22);
-    public static final double L2Height = Units.inchesToMeters(10);
+    public static final double L4Height = Units.inchesToMeters(28.08);
+    public static final double L3Height = Units.inchesToMeters(18.5);
+    public static final double L2Height = Units.inchesToMeters(11);
     public static final double downHeight = Units.inchesToMeters(0);
 
     public static final double sensorToMechanismRatio =
@@ -372,11 +372,11 @@ public class Constants {
 
     public static final Slot0Configs slot0Configs =
         new Slot0Configs()
-            .withKS(0.01)
-            .withKV(4.14) // 5.14
-            .withKA(0.03) // .04
+            .withKS(0.01) // .01
+            .withKV(4.14) // 4.14
+            .withKA(0.03) // .03
             .withKG(0.31) // .31
-            .withKP(12)
+            .withKP(25)
             .withKI(0.0)
             .withKD(.25) // 1
             .withGravityType(GravityTypeValue.Elevator_Static)

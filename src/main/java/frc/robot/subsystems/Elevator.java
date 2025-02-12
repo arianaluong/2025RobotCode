@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Minute;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -37,15 +39,14 @@ public class Elevator extends ExpandedSubsystem {
   private boolean isZeroed = false;
   private Alert elevatorAlert;
   private boolean lastButtonState = false;
-  private Debouncer buttonDebouncer = new Debouncer(.15);
-  private Debouncer elevatorDebouncer = new Debouncer(.25);
+  private Debouncer buttonDebouncer = new Debouncer(.28);
+  private Debouncer elevatorDebouncer = new Debouncer(1.0);
   private Debouncer zeroedDebouncer = new Debouncer(2.5);
 
   private double currentPosition;
-  private double positionTolerance = Units.inchesToMeters(1);
+  private double positionTolerance = Units.inchesToMeters(.5);
 
   public Elevator() {
-    SignalLogger.setPath("ctre-logs");
     elevatorMainMotor = new TalonFX(ElevatorConstants.elevatorMainMotorID);
     elevatorFollowerMotor = new TalonFX(ElevatorConstants.elevatorFollowerMotorID);
     // follower = new Follower(ElevatorConstants.elevatorMainMotorID, false);
@@ -76,6 +77,10 @@ public class Elevator extends ExpandedSubsystem {
     elevatorFollowerMotor.set(0);
   }
 
+  public boolean elevatorIsDown() {
+    return Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 6;
+  }
+
   public Command upSpeed(double speed) {
     return run(
         () -> {
@@ -85,32 +90,34 @@ public class Elevator extends ExpandedSubsystem {
   }
 
   public Command downSpeed(double speed) {
-    return run(
-        () -> {
+    return run(() -> {
           elevatorMainMotor.set(-speed);
           elevatorFollowerMotor.set(-speed);
-        });
+        })
+        .until(() -> buttonDebouncer.calculate(buttonPressed()))
+        .unless(() -> buttonDebouncer.calculate(buttonPressed()));
   }
 
   public Command moveToPosition(double height) {
-    return runOnce(
-        () -> {
+    return run(() -> {
           elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
           elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height));
         })
-    .until(() ->(atSetPoint(height)))
-    .onlyIf(() -> isZeroed)
-    .finallyDo(this::holdPosition);
+        .until(() -> (atSetPoint(height)))
+        // .onlyIf(() -> isZeroed)
+        .withName("move to position");
+    // .finallyDo(this::holdPosition);
   }
 
   public Command downPosition() {
-    return moveToPosition(ElevatorConstants.downHeight)
-    .andThen(downSpeed(.03).until(() -> buttonDebouncer.calculate(buttonPressed())));
+    return moveToPosition(ElevatorConstants.downHeight);
+    // .andThen(downSpeed(.05).until(() -> buttonDebouncer.calculate(buttonPressed())));
   }
 
   public boolean atSetPoint(double targetHeight) {
-    return elevatorDebouncer.calculate(Math.abs(targetHeight - elevatorMainMotor.getPosition().getValueAsDouble()) < positionTolerance);
-
+    return elevatorDebouncer.calculate(
+        Math.abs(targetHeight - elevatorMainMotor.getPosition().getValueAsDouble())
+            < positionTolerance);
   }
 
   public Command holdPosition() {
@@ -123,7 +130,10 @@ public class Elevator extends ExpandedSubsystem {
                   motionMagicRequest.withPosition(
                       elevatorFollowerMotor.getPosition().getValueAsDouble()));
             },
-            () -> elevatorMainMotor.setControl(motionMagicRequest))
+            () -> {
+              elevatorMainMotor.setControl(motionMagicRequest);
+              elevatorFollowerMotor.setControl(motionMagicRequest);
+            })
         .withName("Elevator Hold");
   }
 
@@ -140,7 +150,20 @@ public class Elevator extends ExpandedSubsystem {
                 elevatorMainMotor.setControl(voltageRequest.withOutput(volts.in(Volts)));
                 elevatorFollowerMotor.setControl(voltageRequest.withOutput(volts.in(Volts)));
               },
-              null,
+              log -> {
+                log.motor("Main")
+                    .angularVelocity(
+                        Rotations.per(Minute)
+                            .of(elevatorMainMotor.getVelocity().getValueAsDouble()))
+                    .angularPosition(
+                        Rotations.of(elevatorMainMotor.getVelocity().getValueAsDouble()));
+                log.motor("Follower")
+                    .angularVelocity(
+                        Rotations.per(Minute)
+                            .of(elevatorFollowerMotor.getVelocity().getValueAsDouble()))
+                    .angularPosition(
+                        Rotations.of(elevatorFollowerMotor.getVelocity().getValueAsDouble()));
+              },
               this));
 
   public Command sysIdQuasistaticElevator(SysIdRoutine.Direction direction) {
@@ -165,18 +188,16 @@ public class Elevator extends ExpandedSubsystem {
 
     if (currentButtonState && !lastButtonState) {
       elevatorMainMotor.setPosition(0, 0);
+      elevatorFollowerMotor.setPosition(0, 0);
+
       isZeroed = true;
     }
 
     lastButtonState = currentButtonState;
 
-    // if (!isZeroed && buttonPressed()) {
-    //   elevatorMainMotor.setPosition(0, 0);
-    //   isZeroed = true;
-    // }
-
     if (isZeroed
-        && zeroedDebouncer.calculate(Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 1)
+        && zeroedDebouncer.calculate(
+            Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 1)
         && !buttonPressed()) {
       isZeroed = false;
     }
