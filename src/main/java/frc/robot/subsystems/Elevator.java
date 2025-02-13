@@ -40,11 +40,11 @@ public class Elevator extends ExpandedSubsystem {
   private Alert elevatorAlert;
   private boolean lastButtonState = false;
   private Debouncer buttonDebouncer = new Debouncer(.28);
-  private Debouncer elevatorDebouncer = new Debouncer(1.0);
+  private Debouncer elevatorDebouncer = new Debouncer(.6);
   private Debouncer zeroedDebouncer = new Debouncer(2.5);
 
   private double currentPosition;
-  private double positionTolerance = Units.inchesToMeters(.5);
+  private double positionTolerance = Units.inchesToMeters(.2);
 
   public Elevator() {
     elevatorMainMotor = new TalonFX(ElevatorConstants.elevatorMainMotorID);
@@ -99,9 +99,10 @@ public class Elevator extends ExpandedSubsystem {
   }
 
   public Command moveToPosition(double height) {
+    double h = height + Units.inchesToMeters(.2);
     return run(() -> {
-          elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
-          elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height));
+          elevatorMainMotor.setControl(motionMagicRequest.withPosition(h));
+          elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(h));
         })
         .until(() -> (atSetPoint(height)))
         // .onlyIf(() -> isZeroed)
@@ -110,8 +111,15 @@ public class Elevator extends ExpandedSubsystem {
   }
 
   public Command downPosition() {
-    return moveToPosition(ElevatorConstants.downHeight);
-    // .andThen(downSpeed(.05).until(() -> buttonDebouncer.calculate(buttonPressed())));
+    return run(() -> {
+          elevatorMainMotor.setControl(
+              motionMagicRequest.withPosition(ElevatorConstants.downHeight));
+          elevatorFollowerMotor.setControl(
+              motionMagicRequest.withPosition(ElevatorConstants.downHeight));
+        })
+        .until(() -> (atSetPoint(ElevatorConstants.downHeight)))
+        .andThen(downSpeed(.01).until(() -> buttonDebouncer.calculate(buttonPressed())))
+        .withName("Down position");
   }
 
   public boolean atSetPoint(double targetHeight) {

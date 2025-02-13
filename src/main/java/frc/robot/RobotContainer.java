@@ -25,6 +25,7 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
+import frc.robot.commands.TurnToReef;
 import frc.robot.subsystems.AlgaeIntake;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
@@ -72,27 +73,27 @@ public class RobotContainer {
   Command swervePrematch = new InstantCommand();
 
   public RobotContainer() {
+
+    NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
+    NamedCommands.registerCommand("Stop Indexer", indexer.stop().asProxy());
+    NamedCommands.registerCommand(
+        "Elevator: L4",
+        elevator.moveToPosition(ElevatorConstants.L4Height).withTimeout(3).asProxy());
+    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(1.5).asProxy());
+    NamedCommands.registerCommand("Outtake", outtake.fastOuttake().withTimeout(1.5).asProxy());
+    NamedCommands.registerCommand("Elevator: Bottom", elevator.downPosition().asProxy());
+    NamedCommands.registerCommand(
+        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(5).asProxy());
+
+    SmartDashboard.putData("Power Distribution", powerDistribution);
+    SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
+
     drivetrain.configureAutoBuilder();
 
     configureDriverBindings();
     configureOperatorBindings();
     configureAutoChooser();
     configureBatteryChooser();
-
-    NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
-    NamedCommands.registerCommand("Stop Intake", indexer.stop().asProxy());
-    NamedCommands.registerCommand(
-        "Elevator: L4",
-        elevator.moveToPosition(ElevatorConstants.L4Height).withTimeout(3).asProxy());
-    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(1.5).asProxy());
-    NamedCommands.registerCommand("Outtake", outtake.runOuttake().withTimeout(1.5).asProxy());
-    NamedCommands.registerCommand(
-        "Elevator: Bottom", elevator.downPosition().withTimeout(3).asProxy());
-    NamedCommands.registerCommand(
-        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(5).asProxy());
-
-    SmartDashboard.putData("Power Distribution", powerDistribution);
-    SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
 
     // intakeLaserBroken
     //     .whileTrue(indexer.runIndexer())
@@ -145,19 +146,19 @@ public class RobotContainer {
     driverController
         .leftBumper()
         .whileTrue(
-            // Commands.sequence(
-            // drivetrain.pathFindToSetup(),
-            // new TurnToReef(drivetrain),
-            // Commands.waitSeconds(.08),
-            drivetrain.ReefAlign(true));
+            Commands.sequence(
+                drivetrain.pathFindToSetup(),
+                new TurnToReef(drivetrain),
+                Commands.waitSeconds(.08),
+                drivetrain.ReefAlign(true)));
     driverController
         .rightBumper()
         .whileTrue(
-            // Commands.sequence(
-            // drivetrain.pathFindToSetup(),
-            // new TurnToReef(drivetrain),
-            // Commands.waitSeconds(.08),
-            drivetrain.ReefAlign(false));
+            Commands.sequence(
+                drivetrain.pathFindToSetup(),
+                new TurnToReef(drivetrain),
+                Commands.waitSeconds(.08),
+                drivetrain.ReefAlign(false)));
 
     // driverController.leftBumper().whileTrue(drivetrain.ReefAlignNoVision(true));
 
@@ -179,8 +180,10 @@ public class RobotContainer {
     operatorStick
         .button(OperatorConstants.L4HeightButton)
         .and(armMode.negate())
-        .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
-    // .andThen(elevator.upSpeed(.1).withTimeout(.35)));
+        .onTrue(
+            elevator
+                .moveToPosition(ElevatorConstants.L4Height)
+                .andThen(elevator.upSpeed(.1).withTimeout(.25)));
     operatorStick
         .button(OperatorConstants.L3HeightButton)
         .and(armMode.negate())
@@ -203,7 +206,7 @@ public class RobotContainer {
     operatorStick
         .button(OperatorConstants.elevatorManualDown)
         .and(armMode.negate())
-        .whileTrue(elevator.downSpeed(.1))
+        .whileTrue(elevator.downSpeed(.05))
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
 
     operatorStick
@@ -239,7 +242,7 @@ public class RobotContainer {
     operatorStick
         .button(OperatorConstants.outtakeButton)
         .and(armMode.negate())
-        .onTrue(outtake.runOuttake())
+        .onTrue(outtake.fastOuttake())
         .onFalse(outtake.stopOuttakeMotor());
   }
 

@@ -310,7 +310,7 @@ public class Constants {
   }
 
   public static class IntakeConstants {
-    public static final int groundIntakeMotorID = 23;
+    public static final int groundIntakeMotorID = 14;
     public static final int armIntakeMotorID = 21;
     public static final int indexerMotorID = 16;
 
@@ -331,7 +331,9 @@ public class Constants {
     public static final int outtakeMotorID = 18;
     public static final int outtakeCurrentLimit = 25;
     public static final int outtakeShutOffLimit = 25;
-    public static final double outtakeSpeed = 0.85;
+
+    public static final double fastOuttakeSpeed = 0.85;
+    public static final double slowOuttakeSpeed = 0.353;
 
     public static final int outtakeLaserCanID = 19;
   }
@@ -349,12 +351,12 @@ public class Constants {
     public static final int elevatorFollowerMotorID = 49;
     public static final int buttonSwitchID = 0;
 
-    public static final double maxHeight = Units.inchesToMeters(28.10);
+    public static final double maxHeight = Units.inchesToMeters(28.07);
     public static final double minHeight = 0.0;
 
-    public static final double L4Height = Units.inchesToMeters(28.08);
-    public static final double L3Height = Units.inchesToMeters(18.5);
-    public static final double L2Height = Units.inchesToMeters(11);
+    public static final double L4Height = Units.inchesToMeters(28.05);
+    public static final double L3Height = Units.inchesToMeters(16.353);
+    public static final double L2Height = Units.inchesToMeters(7.3);
     public static final double downHeight = Units.inchesToMeters(0);
 
     public static final double sensorToMechanismRatio =
