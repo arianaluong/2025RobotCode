@@ -28,7 +28,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -47,7 +46,7 @@ public class Constants {
     public static final LinearVelocity slowModeMaxTranslationalSpeed = FeetPerSecond.of(5);
     public static final AngularVelocity maxRotationalSpeed = RotationsPerSecond.of(1.5);
 
-    public static final Time translationZeroToFull = Seconds.of(.5);
+    public static final Time translationZeroToFull = Seconds.of(0.5);
     public static final Time rotationZeroToFull = Seconds.of(0.25);
 
     public static final LinearAcceleration maxTransationalAcceleration =
@@ -55,23 +54,7 @@ public class Constants {
     public static final AngularAcceleration maxAngularAcceleration =
         maxRotationalSpeed.div(rotationZeroToFull);
 
-    public static final double TRACK_WIDTH = Units.inchesToMeters(30.0);
-    public static final double WHEEL_BASE = Units.inchesToMeters(30.0);
-
     public static final double centerToBumber = Units.inchesToMeters(18.5);
-
-    public static final Translation2d frontLeft =
-        new Translation2d(WHEEL_BASE / 2, TRACK_WIDTH / 2);
-    public static final Translation2d frontRight =
-        new Translation2d(WHEEL_BASE / 2, -TRACK_WIDTH / 2);
-    public static final Translation2d backLeft =
-        new Translation2d(-WHEEL_BASE / 2, TRACK_WIDTH / 2);
-    public static final Translation2d backRight =
-        new Translation2d(-WHEEL_BASE / 2, -TRACK_WIDTH / 2);
-
-    public static final Translation2d[] wheelLocations = {
-      frontLeft, frontRight, backLeft, backRight
-    };
 
     public static final PathConstraints pathConstraints =
         new PathConstraints(
@@ -120,8 +103,6 @@ public class Constants {
             limelightTransform.getRotation().toRotation2d());
 
     public static final int[] reefAprilTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
-
-    public static final double loopPeriodSecs = 0.016;
   }
 
   // .890 7.415

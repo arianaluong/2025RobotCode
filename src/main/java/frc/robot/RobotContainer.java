@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -39,15 +40,27 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.util.LogUtil;
 import frc.robot.util.PersistentSendableChooser;
 
-@Logged
+@Logged(strategy = Strategy.OPT_IN)
 public class RobotContainer {
+  @Logged(name = "Swerve")
   public final Swerve drivetrain = TunerConstants.createDrivetrain();
 
+  @Logged(name = "Elevator")
   private final Elevator elevator = new Elevator();
+
+  @Logged(name = "Arm")
   private final Arm arm = new Arm();
+
+  @Logged(name = "Indexer")
   private final Indexer indexer = new Indexer();
+
+  @Logged(name = "Outtake")
   private final Outtake outtake = new Outtake();
+
+  @Logged(name = "Ground Intake")
   private final GroundIntake groundIntake = new GroundIntake();
+
+  @Logged(name = "Algae Intake")
   private final AlgaeIntake algaeIntake = new AlgaeIntake();
 
   private final Telemetry logger =
@@ -80,7 +93,6 @@ public class RobotContainer {
   Command swervePrematch = new InstantCommand();
 
   public RobotContainer() {
-
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
     NamedCommands.registerCommand("Stop Indexer", indexer.stop().asProxy());
     NamedCommands.registerCommand(
@@ -158,7 +170,7 @@ public class RobotContainer {
                 drivetrain.pathFindToSetup(),
                 new TurnToReef(drivetrain),
                 Commands.waitSeconds(.08),
-                drivetrain.ReefAlign(true)));
+                drivetrain.reefAlign(true)));
     driverController
         .rightBumper()
         .whileTrue(
@@ -166,7 +178,7 @@ public class RobotContainer {
                 drivetrain.pathFindToSetup(),
                 new TurnToReef(drivetrain),
                 Commands.waitSeconds(.08),
-                drivetrain.ReefAlign(false)));
+                drivetrain.reefAlign(false)));
 
     // driverController.leftBumper().whileTrue(drivetrain.ReefAlignNoVision(true));
 

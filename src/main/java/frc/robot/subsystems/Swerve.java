@@ -15,14 +15,19 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.FileVersionException;
 import com.pathplanner.lib.util.PathPlannerLogging;
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
@@ -58,6 +63,7 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.PhotonUtils;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
@@ -68,6 +74,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
  * be used in command-based projects.
  */
+@Logged(strategy = Strategy.OPT_IN)
 public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private static final double kSimLoopPeriod = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
@@ -132,9 +139,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   private List<PhotonPipelineResult> latestArducamLeftResult;
   private List<PhotonPipelineResult> latestArducamRightResult;
-  public List<PhotonPipelineResult> latestLimelightResult;
-
-  public Transform2d bestAprilTagTransform;
+  private List<PhotonPipelineResult> latestLimelightResult;
 
   private PhotonCameraSim arducamSimLeft;
   private PhotonCameraSim arducamSimTwo;
@@ -142,10 +147,21 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   private VisionSystemSim visionSim;
 
-  public List<Pose3d> detectedTargets = new ArrayList<>();
-  public List<Integer> detectedAprilTags = new ArrayList<>();
+  @Logged(name = "Detected Targets")
+  private List<Pose3d> detectedTargets = new ArrayList<>();
+
+  private List<Integer> detectedAprilTags = new ArrayList<>();
+
+  @Logged(name = "Rejected Poses")
   private List<Pose3d> rejectedPoses = new ArrayList<>();
+
   private List<PoseEstimate> poseEstimates = new ArrayList<>();
+
+  // Never called, only used to allow logging the poses being used
+  @Logged(name = "Accepted Poses")
+  public List<Pose3d> acceptedPosesList() {
+    return poseEstimates.stream().map((p) -> p.estimatedPose()).toList();
+  }
 
   /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
   private final SysIdRoutine m_sysIdRoutineTranslation =
@@ -214,8 +230,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     if (Utils.isSimulation()) {
       startSimThread();
+      initVisionSim();
     }
-    // configureAutoBuilder();
   }
 
   /**
@@ -237,44 +253,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     if (Utils.isSimulation()) {
       startSimThread();
-      visionSim = new VisionSystemSim("main");
-
-      visionSim.addAprilTags(FieldConstants.aprilTagLayout);
-
-      SimCameraProperties arducamProperties = new SimCameraProperties();
-      arducamProperties.setCalibration(800, 600, Rotation2d.fromDegrees(85.4));
-      arducamProperties.setCalibError(0.21, 0.10);
-      arducamProperties.setFPS(28);
-      arducamProperties.setAvgLatencyMs(36);
-      arducamProperties.setLatencyStdDevMs(15);
-      arducamProperties.setExposureTimeMs(45);
-
-      arducamSimLeft = new PhotonCameraSim(arducamLeft, arducamProperties);
-      arducamSimTwo = new PhotonCameraSim(arducamRight, arducamProperties);
-      visionSim.addCamera(arducamSimLeft, VisionConstants.arducamLeftTransform);
-      visionSim.addCamera(arducamSimTwo, VisionConstants.arducamRightTransform);
-
-      arducamSimLeft.enableRawStream(true);
-      arducamSimLeft.enableProcessedStream(true);
-      arducamSimTwo.enableRawStream(true);
-      arducamSimTwo.enableProcessedStream(true);
-
-      SimCameraProperties limelightProperties = new SimCameraProperties();
-      limelightProperties.setCalibration(640, 480, Rotation2d.fromDegrees(60)); // 960 720 97
-      limelightProperties.setCalibError(0.58, 0.10);
-      limelightProperties.setFPS(26); // 30
-      limelightProperties.setAvgLatencyMs(70); // 36
-      limelightProperties.setLatencyStdDevMs(15);
-      limelightProperties.setExposureTimeMs(45);
-
-      limelightSim = new PhotonCameraSim(limelight, limelightProperties);
-      visionSim.addCamera(limelightSim, VisionConstants.limelightTransform);
-
-      limelightSim.enableRawStream(true);
-      limelightSim.enableProcessedStream(true);
-      limelightSim.enableDrawWireframe(true);
+      initVisionSim();
     }
-    // configureAutoBuilder();
   }
 
   /**
@@ -307,8 +287,47 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     if (Utils.isSimulation()) {
       startSimThread();
+      initVisionSim();
     }
-    // configureAutoBuilder();
+  }
+
+  private void initVisionSim() {
+    visionSim = new VisionSystemSim("main");
+
+    visionSim.addAprilTags(FieldConstants.aprilTagLayout);
+
+    SimCameraProperties arducamProperties = new SimCameraProperties();
+    arducamProperties.setCalibration(800, 600, Rotation2d.fromDegrees(85.4));
+    arducamProperties.setCalibError(0.21, 0.10);
+    arducamProperties.setFPS(28);
+    arducamProperties.setAvgLatencyMs(36);
+    arducamProperties.setLatencyStdDevMs(15);
+    arducamProperties.setExposureTimeMs(45);
+
+    arducamSimLeft = new PhotonCameraSim(arducamLeft, arducamProperties);
+    arducamSimTwo = new PhotonCameraSim(arducamRight, arducamProperties);
+    visionSim.addCamera(arducamSimLeft, VisionConstants.arducamLeftTransform);
+    visionSim.addCamera(arducamSimTwo, VisionConstants.arducamRightTransform);
+
+    arducamSimLeft.enableRawStream(true);
+    arducamSimLeft.enableProcessedStream(true);
+    arducamSimTwo.enableRawStream(true);
+    arducamSimTwo.enableProcessedStream(true);
+
+    SimCameraProperties limelightProperties = new SimCameraProperties();
+    limelightProperties.setCalibration(640, 480, Rotation2d.fromDegrees(60)); // 960 720 97
+    limelightProperties.setCalibError(0.58, 0.10);
+    limelightProperties.setFPS(26); // 30
+    limelightProperties.setAvgLatencyMs(70); // 36
+    limelightProperties.setLatencyStdDevMs(15);
+    limelightProperties.setExposureTimeMs(45);
+
+    limelightSim = new PhotonCameraSim(limelight, limelightProperties);
+    visionSim.addCamera(limelightSim, VisionConstants.limelightTransform);
+
+    limelightSim.enableRawStream(true);
+    limelightSim.enableProcessedStream(true);
+    limelightSim.enableDrawWireframe(true);
   }
 
   public void configureAutoBuilder() {
@@ -338,6 +357,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
           if (poses.isEmpty()) {
             field.getObject("Target Pose").setPoses();
+            setControl(pathApplyRobotSpeeds.withSpeeds(new ChassisSpeeds()));
           }
         });
     PathPlannerLogging.setLogTargetPoseCallback(
@@ -346,14 +366,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     SmartDashboard.putData("Swerve/Field", field);
   }
 
-  public void bestAlignmentPose() {
+  public void updateBestAlignmentPose() {
     List<PhotonPipelineResult> latestResult = latestLimelightResult;
-    List<PhotonTrackedTarget> validTargets = new ArrayList<>();
 
     if (latestResult == null || latestResult.isEmpty()) {
       return;
     }
 
+    List<PhotonTrackedTarget> validTargets = new ArrayList<>();
     for (PhotonPipelineResult result : latestResult) {
       if (!result.hasTargets()) continue;
 
@@ -426,7 +446,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     SmartDashboard.putNumber("Swerve/Left Y Pose", leftPose.getY());
   }
 
-  public Command ReefAlign(Boolean leftAlign) {
+  public Command reefAlign(boolean leftAlign) {
     return new DeferredCommand(
         () -> {
           Pose2d goalPose = leftAlign ? leftPose : rightPose;
@@ -438,7 +458,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         Set.of(this));
   }
 
-  public Command ReefAlignNoVision(Boolean leftAlign) {
+  public Command reefAlignNoVision(boolean leftAlign) {
     return new DeferredCommand(
         () -> {
           Pose2d robotPose = getState().Pose;
@@ -543,16 +563,47 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return run(() -> this.setControl(requestSupplier.get()));
   }
 
-  public Pose3d getarducamLeftPose() {
+  public Pose3d getArducamLeftPose() {
     return new Pose3d(getState().Pose).plus(VisionConstants.arducamLeftTransform);
   }
 
-  public Pose3d getarducamRightPose() {
+  public Pose3d getArducamRightPose() {
     return new Pose3d(getState().Pose).plus(VisionConstants.arducamRightTransform);
   }
 
   public Pose3d getLimelightPose() {
     return new Pose3d(getState().Pose).plus(VisionConstants.limelightTransform);
+  }
+
+  private Pose3d calculateSingleTagPose(
+      PhotonTrackedTarget target,
+      Pose3d tagPoseOnField,
+      Pose2d poseAtTime,
+      Transform3d cameraTransform) {
+    Rotation2d yaw = Rotation2d.fromDegrees(-target.getYaw());
+    Rotation2d pitch = Rotation2d.fromDegrees(target.getPitch());
+
+    Transform3d cameraToRobot3d =
+        new Transform3d(cameraTransform.getTranslation(), cameraTransform.getRotation()).inverse();
+
+    double distanceMagnitude =
+        target.getBestCameraToTarget().getTranslation().getNorm() * pitch.getCos();
+
+    Translation3d cameraToTargetTranslation =
+        new Translation3d(
+            yaw.getCos() * distanceMagnitude,
+            yaw.getSin() * distanceMagnitude,
+            pitch.getSin() * distanceMagnitude);
+    Rotation3d cameraToTagRotation =
+        tagPoseOnField
+            .getRotation()
+            .minus(new Rotation3d(poseAtTime.getRotation()))
+            .plus(cameraToRobot3d.getRotation());
+
+    return PhotonUtils.estimateFieldToRobotAprilTag(
+        new Transform3d(cameraToTargetTranslation, cameraToTagRotation),
+        tagPoseOnField,
+        cameraToRobot3d);
   }
 
   private Vector<N3> getVisionStdDevs(
@@ -563,7 +614,35 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         baseStandardDev * stdDevScale, baseStandardDev * stdDevScale, Double.POSITIVE_INFINITY);
   }
 
-  private boolean isValidPose(
+  private boolean isOutOfBounds(Pose3d visionPose) {
+    // Allow the robot to be just slightly off the field
+    final double fieldTolerance = Units.inchesToMeters(2.5);
+
+    return visionPose.getX() < -fieldTolerance
+        || visionPose.getX() > FieldConstants.aprilTagLayout.getFieldLength() + fieldTolerance
+        || visionPose.getY() < -fieldTolerance
+        || visionPose.getY() > FieldConstants.aprilTagLayout.getFieldWidth() + fieldTolerance
+        || visionPose.getZ() < -0.5
+        || visionPose.getZ() > 1.6;
+  }
+
+  private boolean isValidSingleTagPose(Pose3d visionPose, double distance) {
+    if (distance > 4.5) {
+      return false;
+    }
+
+    if (DriverStation.isAutonomous()) {
+      return false;
+    }
+
+    if (isOutOfBounds(visionPose)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private boolean isValidMultitagPose(
       Pose3d visionPose, double averageDistance, int detectedTargets, double timestampSeconds) {
     if (averageDistance > 4.5) { // 6.5
       return false;
@@ -573,18 +652,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       return false;
     }
 
-    if (averageDistance > 3 && detectedTargets < 2) { // 4
-      return false;
-    }
-
-    // If it thinks the robot is out of field bounds
-    if (visionPose.getX() < 0.0
-        || visionPose.getX() > FieldConstants.aprilTagLayout.getFieldLength()
-        || visionPose.getY() < 0.0
-        || visionPose.getY() > FieldConstants.aprilTagLayout.getFieldWidth()
-        || visionPose.getZ()
-            < -0.5 // To account for minor inaccuracies in the camera location on the robot
-        || visionPose.getZ() > 1.6) {
+    if (isOutOfBounds(visionPose)) {
       return false;
     }
 
@@ -598,8 +666,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     Rotation2d angleDifference =
         rotationAtTime.get().minus(visionPose.getRotation().toRotation2d());
 
-    double angleTolerance =
-        DriverStation.isAutonomous() ? 8.0 : (detectedTargets >= 2) ? 25.0 : 15.0;
+    double angleTolerance = DriverStation.isAutonomous() ? 8.0 : 15.0;
 
     if (Math.abs(angleDifference.getDegrees()) > angleTolerance) {
       return false;
@@ -612,7 +679,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       List<PhotonPipelineResult> latestResults,
       PhotonPoseEstimator poseEstimator,
       Transform3d cameraTransform,
-      double tagStdDev) {
+      double baseSingleTagStdDev,
+      double baseMultiTagStdDev) {
     if (latestResults.isEmpty()) {
       return;
     }
@@ -638,20 +706,48 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
       double averageDistance = totalDistance / tagCount;
 
-      if (!isValidPose(
-          visionPose.estimatedPose,
-          averageDistance,
-          visionPose.targetsUsed.size(),
-          visionPose.timestampSeconds)) {
+      if (tagCount > 1
+          && !isValidMultitagPose(
+              visionPose.estimatedPose,
+              averageDistance,
+              visionPose.targetsUsed.size(),
+              visionPose.timestampSeconds)) {
         rejectedPoses.add(visionPose.estimatedPose);
         return;
       }
 
-      poseEstimates.add(
-          new PoseEstimate(
-              visionPose.estimatedPose,
-              visionPose.timestampSeconds,
-              getVisionStdDevs(tagCount, averageDistance, tagStdDev)));
+      if (tagCount > 1) {
+        poseEstimates.add(
+            new PoseEstimate(
+                visionPose.estimatedPose,
+                visionPose.timestampSeconds,
+                getVisionStdDevs(tagCount, averageDistance, baseMultiTagStdDev)));
+      } else {
+        PhotonTrackedTarget target = visionPose.targetsUsed.get(0);
+        Optional<Pose2d> robotPoseAtTime =
+            samplePoseAt(Utils.fpgaToCurrentTime(visionPose.timestampSeconds));
+        Optional<Pose3d> tagOnField =
+            FieldConstants.aprilTagLayout.getTagPose(target.getFiducialId());
+
+        if (robotPoseAtTime.isEmpty() || tagOnField.isEmpty()) {
+          continue;
+        }
+
+        Pose3d singleTagPose =
+            calculateSingleTagPose(
+                target, tagOnField.get(), robotPoseAtTime.get(), cameraTransform);
+
+        if (!isValidSingleTagPose(singleTagPose, averageDistance)) {
+          rejectedPoses.add(singleTagPose);
+          continue;
+        }
+
+        poseEstimates.add(
+            new PoseEstimate(
+                singleTagPose,
+                visionPose.timestampSeconds,
+                getVisionStdDevs(tagCount, averageDistance, baseSingleTagStdDev)));
+      }
 
       for (PhotonTrackedTarget target : visionPose.targetsUsed) {
         int aprilTagID = target.getFiducialId();
@@ -667,7 +763,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
   }
 
-  public void updateVisionPoseEstimates() {
+  private void updateVisionPoseEstimates() {
     poseEstimates.clear();
     detectedTargets.clear();
     rejectedPoses.clear();
@@ -676,16 +772,19 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         latestArducamLeftResult,
         arducamLeftPoseEstimator,
         VisionConstants.arducamLeftTransform,
+        Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5));
     updateVisionPoses(
         latestArducamRightResult,
         arducamRightPoseEstimator,
         VisionConstants.arducamRightTransform,
+        Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5));
     updateVisionPoses(
         latestLimelightResult,
         limelightPoseEstimator,
         VisionConstants.limelightTransform,
+        Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5));
 
     Collections.sort(poseEstimates);
@@ -696,24 +795,17 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           Utils.fpgaToCurrentTime(poseEstimate.timestamp()),
           poseEstimate.standardDevs());
     }
-
-    field
-        .getObject("Detected Targets")
-        .setPoses(detectedTargets.stream().map(p -> p.toPose2d()).toArray(Pose2d[]::new));
-    field
-        .getObject("Rejected Poses")
-        .setPoses(rejectedPoses.stream().map(p -> p.toPose2d()).toArray(Pose2d[]::new));
   }
 
   public List<PhotonPipelineResult> getLimelightResults() {
     return latestLimelightResult;
   }
 
-  public List<PhotonPipelineResult> getarducamLeftResults() {
+  public List<PhotonPipelineResult> getArducamLeftResults() {
     return latestArducamLeftResult;
   }
 
-  public List<PhotonPipelineResult> getarducamRightResults() {
+  public List<PhotonPipelineResult> getArducamRightResults() {
     return latestArducamRightResult;
   }
 
@@ -758,7 +850,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     latestLimelightResult = limelight.getAllUnreadResults();
 
     updateVisionPoseEstimates();
-    bestAlignmentPose();
+    updateBestAlignmentPose();
 
     /*
      * Periodically try to apply the operator perspective.
