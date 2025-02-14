@@ -194,7 +194,6 @@ public class RobotContainer {
   }
 
   private void configureElevatorBindings() {
-
     elevator.setDefaultCommand(elevator.holdPosition());
 
     operatorStick
