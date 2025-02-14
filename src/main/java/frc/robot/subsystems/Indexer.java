@@ -12,6 +12,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -21,15 +22,15 @@ import frc.robot.util.ExpandedSubsystem;
 import java.util.ArrayList;
 import java.util.List;
 
-@Logged
+@Logged(strategy = Strategy.OPT_IN)
 public class Indexer extends ExpandedSubsystem {
-  /** Creates a new Indexer. */
   private SparkMax indexerMotor;
 
   private final double prematchDelay = 2.5;
 
   public List<Alert> indexerPrematchAlerts = new ArrayList<Alert>();
 
+  /** Creates a new Indexer. */
   public Indexer() {
     indexerMotor = new SparkMax(IntakeConstants.indexerMotorID, MotorType.kBrushless);
 
@@ -71,7 +72,7 @@ public class Indexer extends ExpandedSubsystem {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Indexer Speed", indexerMotor.get());
+    SmartDashboard.putNumber("Indexer/Speed", indexerMotor.get());
   }
 
   @Override

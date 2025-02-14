@@ -12,18 +12,19 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.util.ExpandedSubsystem;
 
-@Logged
+@Logged(strategy = Strategy.OPT_IN)
 public class GroundIntake extends ExpandedSubsystem {
-  /** Creates a new GroundIntake. */
   private SparkMax groundIntakeMotor;
 
   private final double prematchDelay = 2.5;
 
+  /** Creates a new GroundIntake. */
   public GroundIntake() {
     groundIntakeMotor = new SparkMax(IntakeConstants.groundIntakeMotorID, MotorType.kBrushless);
 

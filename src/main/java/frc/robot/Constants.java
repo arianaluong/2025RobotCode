@@ -23,17 +23,11 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -41,8 +35,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +46,7 @@ public class Constants {
     public static final LinearVelocity slowModeMaxTranslationalSpeed = FeetPerSecond.of(5);
     public static final AngularVelocity maxRotationalSpeed = RotationsPerSecond.of(1.5);
 
-    public static final Time translationZeroToFull = Seconds.of(.5);
+    public static final Time translationZeroToFull = Seconds.of(0.5);
     public static final Time rotationZeroToFull = Seconds.of(0.25);
 
     public static final LinearAcceleration maxTransationalAcceleration =
@@ -62,23 +54,7 @@ public class Constants {
     public static final AngularAcceleration maxAngularAcceleration =
         maxRotationalSpeed.div(rotationZeroToFull);
 
-    public static final double TRACK_WIDTH = Units.inchesToMeters(30.0);
-    public static final double WHEEL_BASE = Units.inchesToMeters(30.0);
-
     public static final double centerToBumber = Units.inchesToMeters(18.5);
-
-    public static final Translation2d frontLeft =
-        new Translation2d(WHEEL_BASE / 2, TRACK_WIDTH / 2);
-    public static final Translation2d frontRight =
-        new Translation2d(WHEEL_BASE / 2, -TRACK_WIDTH / 2);
-    public static final Translation2d backLeft =
-        new Translation2d(-WHEEL_BASE / 2, TRACK_WIDTH / 2);
-    public static final Translation2d backRight =
-        new Translation2d(-WHEEL_BASE / 2, -TRACK_WIDTH / 2);
-
-    public static final Translation2d[] wheelLocations = {
-      frontLeft, frontRight, backLeft, backRight
-    };
 
     public static final PathConstraints pathConstraints =
         new PathConstraints(
@@ -94,20 +70,6 @@ public class Constants {
   }
 
   public static class VisionConstants {
-    public static final Path apriltaglayout =
-        Paths.get("src/main/java/frc/robot/utils/2025-reefscape.json");
-
-    public static final String kCameraName = "YOUR CAMERA NAME";
-
-    public static final AprilTagFieldLayout kTagLayout =
-        AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
-
-    public static final Transform3d kRobotToCam =
-        new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0));
-
-    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
-    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
-
     public static final String limelightName = "LemonLime";
     public static final String arducamLeftName = "Arducam_Left";
     public static final String arducamRightName = "Arducam_Right";
@@ -141,12 +103,6 @@ public class Constants {
             limelightTransform.getRotation().toRotation2d());
 
     public static final int[] reefAprilTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
-
-    public static final double loopPeriodSecs = 0.016;
-
-    public static Transform3d rightArducamTransform;
-
-    public static Transform3d leftArducamTransform;
   }
 
   // .890 7.415
@@ -339,7 +295,7 @@ public class Constants {
   }
 
   public static class ElevatorConstants {
-    public static final double elevatorGearRatio = 1.0 / 6.0;
+    public static final double elevatorGearRatio = 6.0 / 1.0;
     public static final double sprocketDiameter = Units.inchesToMeters(1.75);
 
     public static final int elevatorMainMotorID = 21;
@@ -355,12 +311,13 @@ public class Constants {
     public static final double downHeight = Units.inchesToMeters(0);
 
     public static final double sensorToMechanismRatio =
-        elevatorGearRatio * Math.PI * sprocketDiameter;
+        elevatorGearRatio / (sprocketDiameter * Math.PI);
 
-    public static final double bottomSpeed = .1;
+    public static final double bottomSpeed = 0.1;
 
-    public static final LinearVelocity maxVelocity = MetersPerSecond.of(2.26 * .9); // 2.26*.9
-    public static final LinearAcceleration maxAcceleration = maxVelocity.div(Seconds.of(.5)); // .25
+    public static final LinearVelocity maxVelocity = MetersPerSecond.of(2.26 * 0.9); // 2.26*.9
+    public static final LinearAcceleration maxAcceleration =
+        maxVelocity.div(Seconds.of(0.5)); // .25
 
     public static final MotionMagicConfigs motionMagicConfigs =
         new MotionMagicConfigs()
@@ -375,12 +332,12 @@ public class Constants {
             .withKG(0.31) // .31
             .withKP(25)
             .withKI(0.0)
-            .withKD(.25) // 1
+            .withKD(0.25) // 1
             .withGravityType(GravityTypeValue.Elevator_Static)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign);
 
     public static final FeedbackConfigs feedbackConfigs =
-        new FeedbackConfigs().withSensorToMechanismRatio(1 / sensorToMechanismRatio);
+        new FeedbackConfigs().withSensorToMechanismRatio(sensorToMechanismRatio);
 
     public static final MotorOutputConfigs motorOutputConfigs =
         new MotorOutputConfigs()

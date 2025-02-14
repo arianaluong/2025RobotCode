@@ -12,13 +12,13 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.OuttakeConstants;
 import frc.robot.util.ExpandedSubsystem;
 
-@Logged
+@Logged(strategy = Strategy.OPT_IN)
 public class Outtake extends ExpandedSubsystem {
-
   private SparkMax outtakemotor;
   private LaserCan outtakeLaser;
 

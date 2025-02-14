@@ -4,9 +4,13 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -36,16 +40,31 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.util.LogUtil;
 import frc.robot.util.PersistentSendableChooser;
 
+@Logged(strategy = Strategy.OPT_IN)
 public class RobotContainer {
+  @Logged(name = "Swerve")
+  public final Swerve drivetrain = TunerConstants.createDrivetrain();
+
+  @Logged(name = "Elevator")
   private final Elevator elevator = new Elevator();
+
+  @Logged(name = "Arm")
   private final Arm arm = new Arm();
+
+  @Logged(name = "Indexer")
   private final Indexer indexer = new Indexer();
+
+  @Logged(name = "Outtake")
   private final Outtake outtake = new Outtake();
+
+  @Logged(name = "Ground Intake")
   private final GroundIntake groundIntake = new GroundIntake();
-  private final Telemetry logger = new Telemetry(15);
+
+  @Logged(name = "Algae Intake")
   private final AlgaeIntake algaeIntake = new AlgaeIntake();
-  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+
+  private final Telemetry logger =
+      new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
 
   private PersistentSendableChooser<String> batteryChooser;
   private SendableChooser<Command> autoChooser;
@@ -53,7 +72,8 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandJoystick operatorStick = new CommandJoystick(1);
 
-  public final Swerve drivetrain = frc.robot.TunerConstants.createDrivetrain();
+  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
   private final PowerDistribution powerDistribution = new PowerDistribution(1, ModuleType.kRev);
 
@@ -73,7 +93,6 @@ public class RobotContainer {
   Command swervePrematch = new InstantCommand();
 
   public RobotContainer() {
-
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
     NamedCommands.registerCommand("Stop Indexer", indexer.stop().asProxy());
     NamedCommands.registerCommand(
@@ -151,7 +170,7 @@ public class RobotContainer {
                 drivetrain.pathFindToSetup(),
                 new TurnToReef(drivetrain),
                 Commands.waitSeconds(.08),
-                drivetrain.ReefAlign(true)));
+                drivetrain.reefAlign(true)));
     driverController
         .rightBumper()
         .whileTrue(
@@ -159,7 +178,7 @@ public class RobotContainer {
                 drivetrain.pathFindToSetup(),
                 new TurnToReef(drivetrain),
                 Commands.waitSeconds(.08),
-                drivetrain.ReefAlign(false)));
+                drivetrain.reefAlign(false)));
 
     // driverController.leftBumper().whileTrue(drivetrain.ReefAlignNoVision(true));
 
@@ -175,7 +194,6 @@ public class RobotContainer {
   }
 
   private void configureElevatorBindings() {
-
     elevator.setDefaultCommand(elevator.holdPosition());
 
     operatorStick

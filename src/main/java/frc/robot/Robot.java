@@ -8,6 +8,7 @@ import com.ctre.phoenix6.CANBus.CANBusStatus;
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import com.revrobotics.spark.SparkBase;
+import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.hal.can.CANStatus;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -19,12 +20,19 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.WPILibVersion;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.AlgaeIntakeConstants;
+import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.OuttakeConstants;
 import frc.robot.util.LogUtil;
+import java.util.HashMap;
+import java.util.Map;
+import org.littletonrobotics.urcl.URCL;
 
-@Logged
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
+  @Logged(name = "Robot")
   private final RobotContainer m_robotContainer;
 
   public Robot() {
@@ -33,8 +41,14 @@ public class Robot extends TimedRobot {
     // CanBridge.runTCP();
 
     DataLogManager.start();
-
     DriverStation.startDataLog(DataLogManager.getLog());
+
+    Epilogue.configure(
+        (config) -> {
+          config.root = "";
+          config.backend = config.backend.lazy();
+        });
+    Epilogue.bind(this);
 
     SignalLogger.start();
 
@@ -69,6 +83,15 @@ public class Robot extends TimedRobot {
         LogUtil.recordMetadata("Git Dirty", "Unknown");
         break;
     }
+
+    Map<Integer, String> motorAliases = new HashMap<>();
+    motorAliases.put(AlgaeIntakeConstants.algaeIntakeMotorID, "Algae Intake");
+    motorAliases.put(ArmConstants.armMotorID, "Arm");
+    motorAliases.put(IntakeConstants.groundIntakeMotorID, "Ground Intake");
+    motorAliases.put(IntakeConstants.indexerMotorID, "Indexer");
+    motorAliases.put(OuttakeConstants.outtakeMotorID, "Outtake");
+
+    URCL.start(motorAliases);
 
     m_robotContainer = new RobotContainer();
 
