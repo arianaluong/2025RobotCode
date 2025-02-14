@@ -23,17 +23,12 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -41,8 +36,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,20 +87,6 @@ public class Constants {
   }
 
   public static class VisionConstants {
-    public static final Path apriltaglayout =
-        Paths.get("src/main/java/frc/robot/utils/2025-reefscape.json");
-
-    public static final String kCameraName = "YOUR CAMERA NAME";
-
-    public static final AprilTagFieldLayout kTagLayout =
-        AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
-
-    public static final Transform3d kRobotToCam =
-        new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0));
-
-    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
-    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
-
     public static final String limelightName = "LemonLime";
     public static final String arducamLeftName = "Arducam_Left";
     public static final String arducamRightName = "Arducam_Right";
@@ -143,10 +122,6 @@ public class Constants {
     public static final int[] reefAprilTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
 
     public static final double loopPeriodSecs = 0.016;
-
-    public static Transform3d rightArducamTransform;
-
-    public static Transform3d leftArducamTransform;
   }
 
   // .890 7.415
@@ -357,10 +332,11 @@ public class Constants {
     public static final double sensorToMechanismRatio =
         elevatorGearRatio * Math.PI * sprocketDiameter;
 
-    public static final double bottomSpeed = .1;
+    public static final double bottomSpeed = 0.1;
 
-    public static final LinearVelocity maxVelocity = MetersPerSecond.of(2.26 * .9); // 2.26*.9
-    public static final LinearAcceleration maxAcceleration = maxVelocity.div(Seconds.of(.5)); // .25
+    public static final LinearVelocity maxVelocity = MetersPerSecond.of(2.26 * 0.9); // 2.26*.9
+    public static final LinearAcceleration maxAcceleration =
+        maxVelocity.div(Seconds.of(0.5)); // .25
 
     public static final MotionMagicConfigs motionMagicConfigs =
         new MotionMagicConfigs()
@@ -375,7 +351,7 @@ public class Constants {
             .withKG(0.31) // .31
             .withKP(25)
             .withKI(0.0)
-            .withKD(.25) // 1
+            .withKD(0.25) // 1
             .withGravityType(GravityTypeValue.Elevator_Static)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign);
 

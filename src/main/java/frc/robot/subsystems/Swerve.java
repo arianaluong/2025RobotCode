@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -89,9 +90,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private final SwerveRequest.ApplyRobotSpeeds pathApplyRobotSpeeds =
       new SwerveRequest.ApplyRobotSpeeds().withDriveRequestType(DriveRequestType.Velocity);
 
-  // private TimeInterpolatableBuffer<Rotation2d> rotationBuffer =
-  //     TimeInterpolatableBuffer.createBuffer(1.5);
-
   private Field2d field = new Field2d();
 
   private int bestTargetID;
@@ -134,11 +132,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   private List<PhotonPipelineResult> latestArducamLeftResult;
   private List<PhotonPipelineResult> latestArducamRightResult;
-  public List<PhotonPipelineResult> latestLimelightResult = new ArrayList<>();
+  public List<PhotonPipelineResult> latestLimelightResult;
 
   public Transform2d bestAprilTagTransform;
-
-  // Temporary fix for inaccurate poses while auto shooting
 
   private PhotonCameraSim arducamSimLeft;
   private PhotonCameraSim arducamSimTwo;
@@ -420,22 +416,22 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 .getTranslation(),
             Rotation2d.fromDegrees(desiredRotation));
 
-    SmartDashboard.putNumber("Goal Rotation", desiredRotation);
-    SmartDashboard.putNumber("Best Tag ID", bestTargetID);
-    SmartDashboard.putNumber("Current Rotation", getState().Pose.getRotation().getDegrees());
+    SmartDashboard.putNumber("Swerve/Goal Rotation", desiredRotation);
+    SmartDashboard.putNumber("Swerve/Best Tag ID", bestTargetID);
+    SmartDashboard.putNumber("Swerve/Current Rotation", getState().Pose.getRotation().getDegrees());
 
-    SmartDashboard.putNumber("Right X Pose", rightPose.getX());
-    SmartDashboard.putNumber("Right Y Pose", rightPose.getY());
-    SmartDashboard.putNumber("Left X Pose", leftPose.getX());
-    SmartDashboard.putNumber("Left Y Pose", leftPose.getY());
+    SmartDashboard.putNumber("Swerve/Right X Pose", rightPose.getX());
+    SmartDashboard.putNumber("Swerve/Right Y Pose", rightPose.getY());
+    SmartDashboard.putNumber("Swerve/Left X Pose", leftPose.getX());
+    SmartDashboard.putNumber("Swerve/Left Y Pose", leftPose.getY());
   }
 
   public Command ReefAlign(Boolean leftAlign) {
     return new DeferredCommand(
         () -> {
           Pose2d goalPose = leftAlign ? leftPose : rightPose;
-          SmartDashboard.putNumber("Attempted Pose X", goalPose.getX());
-          SmartDashboard.putNumber("Attempted Pose Y", goalPose.getY());
+          SmartDashboard.putNumber("Swerve/Attempted Pose X", goalPose.getX());
+          SmartDashboard.putNumber("Swerve/Attempted Pose Y", goalPose.getY());
           // return new InstantCommand();
           return AutoBuilder.pathfindToPose(goalPose, SwerveConstants.pathConstraints, 0.0);
         },
@@ -592,11 +588,15 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       return false;
     }
 
-    Optional<Pose2d> poseAtTime = samplePoseAt(timestampSeconds);
-    Rotation2d angleAtTime =
-        poseAtTime.map(Pose2d::getRotation).orElse(getState().Pose.getRotation());
+    Optional<Rotation2d> rotationAtTime =
+        samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds)).map((pose) -> pose.getRotation());
 
-    Rotation2d angleDifference = angleAtTime.minus(visionPose.getRotation().toRotation2d());
+    if (rotationAtTime.isEmpty()) {
+      return false;
+    }
+
+    Rotation2d angleDifference =
+        rotationAtTime.get().minus(visionPose.getRotation().toRotation2d());
 
     double angleTolerance =
         DriverStation.isAutonomous() ? 8.0 : (detectedTargets >= 2) ? 25.0 : 15.0;
@@ -750,7 +750,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   @Override
   public void periodic() {
-    // long periodicSTART = System.nanoTime();
+    double startTime = Timer.getFPGATimestamp();
     field.setRobotPose(getState().Pose);
 
     latestArducamLeftResult = arducamLeft.getAllUnreadResults();
@@ -759,10 +759,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     updateVisionPoseEstimates();
     bestAlignmentPose();
-
-    // long periodicEND = System.nanoTime();
-    // SmartDashboard.putNumber("Periodic Run Time (ms)", (periodicSTART - periodicEND) /
-    // (1000000));
 
     /*
      * Periodically try to apply the operator perspective.
@@ -782,6 +778,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 m_hasAppliedOperatorPerspective = true;
               });
     }
+
+    double runtime = (Timer.getFPGATimestamp() - startTime) * 1000.0;
+    SmartDashboard.putNumber("Swerve/Periodic Runtime (ms)", runtime);
   }
 
   @Override

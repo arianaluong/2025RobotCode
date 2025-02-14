@@ -23,13 +23,13 @@ import java.util.List;
 
 @Logged
 public class Indexer extends ExpandedSubsystem {
-  /** Creates a new Indexer. */
   private SparkMax indexerMotor;
 
   private final double prematchDelay = 2.5;
 
   public List<Alert> indexerPrematchAlerts = new ArrayList<Alert>();
 
+  /** Creates a new Indexer. */
   public Indexer() {
     indexerMotor = new SparkMax(IntakeConstants.indexerMotorID, MotorType.kBrushless);
 
@@ -71,7 +71,7 @@ public class Indexer extends ExpandedSubsystem {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Indexer Speed", indexerMotor.get());
+    SmartDashboard.putNumber("Indexer/Speed", indexerMotor.get());
   }
 
   @Override

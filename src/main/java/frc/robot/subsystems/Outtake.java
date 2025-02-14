@@ -18,7 +18,6 @@ import frc.robot.util.ExpandedSubsystem;
 
 @Logged
 public class Outtake extends ExpandedSubsystem {
-
   private SparkMax outtakemotor;
   private LaserCan outtakeLaser;
 

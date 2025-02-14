@@ -19,11 +19,11 @@ import frc.robot.util.ExpandedSubsystem;
 
 @Logged
 public class GroundIntake extends ExpandedSubsystem {
-  /** Creates a new GroundIntake. */
   private SparkMax groundIntakeMotor;
 
   private final double prematchDelay = 2.5;
 
+  /** Creates a new GroundIntake. */
   public GroundIntake() {
     groundIntakeMotor = new SparkMax(IntakeConstants.groundIntakeMotorID, MotorType.kBrushless);
 

@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -37,15 +39,17 @@ import frc.robot.util.LogUtil;
 import frc.robot.util.PersistentSendableChooser;
 
 public class RobotContainer {
+  public final Swerve drivetrain = TunerConstants.createDrivetrain();
+
   private final Elevator elevator = new Elevator();
   private final Arm arm = new Arm();
   private final Indexer indexer = new Indexer();
   private final Outtake outtake = new Outtake();
   private final GroundIntake groundIntake = new GroundIntake();
-  private final Telemetry logger = new Telemetry(15);
   private final AlgaeIntake algaeIntake = new AlgaeIntake();
-  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+
+  private final Telemetry logger =
+      new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
 
   private PersistentSendableChooser<String> batteryChooser;
   private SendableChooser<Command> autoChooser;
@@ -53,7 +57,8 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandJoystick operatorStick = new CommandJoystick(1);
 
-  public final Swerve drivetrain = frc.robot.TunerConstants.createDrivetrain();
+  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
   private final PowerDistribution powerDistribution = new PowerDistribution(1, ModuleType.kRev);
 

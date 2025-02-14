@@ -84,6 +84,6 @@ public class Arm extends ExpandedSubsystem {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Arm Rotations", armAbsoluteEncoder.getPosition());
+    SmartDashboard.putNumber("Arm/Rotations", armAbsoluteEncoder.getPosition());
   }
 }

@@ -104,7 +104,7 @@ public class AlgaeIntake extends ExpandedSubsystem {
   // }
 
   public void periodic() {
-    SmartDashboard.putNumber("Algae Intake Encoder Offset", algaeEncoder.getPosition());
+    SmartDashboard.putNumber("Algae Intake/Encoder Offset", algaeEncoder.getPosition());
   }
 
   // public Command getPrematchCheckCommand(

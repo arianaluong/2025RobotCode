@@ -39,12 +39,11 @@ public class Elevator extends ExpandedSubsystem {
   private boolean isZeroed = false;
   private Alert elevatorAlert;
   private boolean lastButtonState = false;
-  private Debouncer buttonDebouncer = new Debouncer(.28);
-  private Debouncer elevatorDebouncer = new Debouncer(.6);
+  private Debouncer buttonDebouncer = new Debouncer(0.28);
+  private Debouncer elevatorDebouncer = new Debouncer(0.6);
   private Debouncer zeroedDebouncer = new Debouncer(2.5);
 
-  private double currentPosition;
-  private double positionTolerance = Units.inchesToMeters(.2);
+  private double positionTolerance = Units.inchesToMeters(0.2);
 
   public Elevator() {
     elevatorMainMotor = new TalonFX(ElevatorConstants.elevatorMainMotorID);
@@ -106,7 +105,7 @@ public class Elevator extends ExpandedSubsystem {
         })
         .until(() -> (atSetPoint(height)))
         // .onlyIf(() -> isZeroed)
-        .withName("move to position");
+        .withName("Move to " + height + " meters");
     // .finallyDo(this::holdPosition);
   }
 
@@ -119,7 +118,7 @@ public class Elevator extends ExpandedSubsystem {
         })
         .until(() -> (atSetPoint(ElevatorConstants.downHeight)))
         .andThen(downSpeed(.01).until(() -> buttonDebouncer.calculate(buttonPressed())))
-        .withName("Down position");
+        .withName("Down Position");
   }
 
   public boolean atSetPoint(double targetHeight) {
@@ -185,12 +184,12 @@ public class Elevator extends ExpandedSubsystem {
   @Override
   public void periodic() {
     SmartDashboard.putNumber(
-        "Elevator Main Position",
+        "Elevator/Main Position",
         Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()));
     SmartDashboard.putNumber(
-        "Elevator Follower Position",
+        "Elevator/Follower Position",
         Units.metersToInches(elevatorFollowerMotor.getPosition().getValueAsDouble()));
-    SmartDashboard.putBoolean("Button Pressed", buttonPressed());
+    SmartDashboard.putBoolean("Elevator/Button Pressed", buttonPressed());
 
     boolean currentButtonState = buttonPressed();
 
