@@ -436,8 +436,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           Pose2d goalPose = leftAlign ? leftPose : rightPose;
           SmartDashboard.putNumber("Attempted Pose X", goalPose.getX());
           SmartDashboard.putNumber("Attempted Pose Y", goalPose.getY());
-          return new InstantCommand();
-          // return AutoBuilder.pathfindToPose(goalPose, SwerveConstants.pathConstraints, 0.0);
+          // return new InstantCommand();
+          return AutoBuilder.pathfindToPose(goalPose, SwerveConstants.pathConstraints, 0.0);
         },
         Set.of(this));
   }

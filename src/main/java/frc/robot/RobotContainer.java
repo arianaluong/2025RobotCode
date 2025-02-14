@@ -78,10 +78,11 @@ public class RobotContainer {
     NamedCommands.registerCommand("Stop Indexer", indexer.stop().asProxy());
     NamedCommands.registerCommand(
         "Elevator: L4",
-        elevator.moveToPosition(ElevatorConstants.L4Height).withTimeout(3).asProxy());
-    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(1.5).asProxy());
+        elevator.moveToPosition(ElevatorConstants.L4Height).withTimeout(4).asProxy());
+    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(3).asProxy());
     NamedCommands.registerCommand("Outtake", outtake.fastOuttake().withTimeout(1.5).asProxy());
-    NamedCommands.registerCommand("Elevator: Bottom", elevator.downPosition().asProxy());
+    NamedCommands.registerCommand(
+        "Elevator: Bottom", elevator.downPosition().withTimeout(4).asProxy());
     NamedCommands.registerCommand(
         "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(5).asProxy());
 
@@ -162,7 +163,7 @@ public class RobotContainer {
 
     // driverController.leftBumper().whileTrue(drivetrain.ReefAlignNoVision(true));
 
-    // driverController.rightBumper().whileTrue(drivetrain.ReefAlignNoVision(false));
+    // driverController.rightBumper().whileTrue(drivetrain.ReefAlignNoVision(fal`se));
 
     // reset the field-centric heading on left bumper press
     driverController
@@ -289,11 +290,11 @@ public class RobotContainer {
         .whileTrue(
             elevator
                 .downPosition()
-                .andThen(arm.armBottom())
+                .andThen(arm.armTop())
                 .andThen(
                     Commands.sequence(
                         algaeIntake.run(algaeIntake::algaeIntakeUp),
-                        Commands.waitSeconds(1.5),
+                        Commands.waitSeconds(1.0),
                         algaeIntake.runOnce(algaeIntake::stopAlgaeIntake))))
         .onFalse(
             algaeIntake

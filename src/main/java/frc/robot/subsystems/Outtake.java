@@ -54,7 +54,7 @@ public class Outtake extends ExpandedSubsystem {
   }
 
   public Command autoOuttake() {
-    return run(this::fastOuttake).until(() -> !outtakeLaserBroken()).finallyDo(this::stop);
+    return fastOuttake().until(() -> !outtakeLaserBroken()).finallyDo(this::stop);
   }
 
   public void stop() {

@@ -305,13 +305,8 @@ public class Constants {
     }
   }
 
-  public static class GyroConstants {
-    public static final int pigeonID = 35;
-  }
-
   public static class IntakeConstants {
     public static final int groundIntakeMotorID = 14;
-    public static final int armIntakeMotorID = 21;
     public static final int indexerMotorID = 16;
 
     public static final double indexerMotorSpeed = .85;
@@ -339,7 +334,7 @@ public class Constants {
   }
 
   public static class AlgaeIntakeConstants {
-    public static final int algaeIntakeMotorID = 20;
+    public static final int algaeIntakeMotorID = 17;
     public static final double algaeIntakeSpeed = .2;
   }
 
@@ -347,15 +342,15 @@ public class Constants {
     public static final double elevatorGearRatio = 1.0 / 6.0;
     public static final double sprocketDiameter = Units.inchesToMeters(1.75);
 
-    public static final int elevatorMainMotorID = 48;
-    public static final int elevatorFollowerMotorID = 49;
+    public static final int elevatorMainMotorID = 21;
+    public static final int elevatorFollowerMotorID = 22;
     public static final int buttonSwitchID = 0;
 
     public static final double maxHeight = Units.inchesToMeters(28.07);
     public static final double minHeight = 0.0;
 
     public static final double L4Height = Units.inchesToMeters(28.05);
-    public static final double L3Height = Units.inchesToMeters(16.353);
+    public static final double L3Height = Units.inchesToMeters(15.5);
     public static final double L2Height = Units.inchesToMeters(7.3);
     public static final double downHeight = Units.inchesToMeters(0);
 
@@ -416,7 +411,7 @@ public class Constants {
   }
 
   public static class ArmConstants {
-    public static final int armMotorID = 47;
+    public static final int armMotorID = 15;
     public static final int armMaxVelocity = 0;
     public static final int armMaxAcceleration = 0;
 
