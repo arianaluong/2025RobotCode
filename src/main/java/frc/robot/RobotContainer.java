@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -38,6 +39,7 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.util.LogUtil;
 import frc.robot.util.PersistentSendableChooser;
 
+@Logged
 public class RobotContainer {
   public final Swerve drivetrain = TunerConstants.createDrivetrain();
 
