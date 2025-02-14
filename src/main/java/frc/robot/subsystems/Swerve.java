@@ -357,7 +357,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
           if (poses.isEmpty()) {
             field.getObject("Target Pose").setPoses();
-            setControl(pathApplyRobotSpeeds.withSpeeds(new ChassisSpeeds()));
+            setControl(
+                pathApplyRobotSpeeds
+                    .withSpeeds(new ChassisSpeeds())
+                    .withWheelForceFeedforwardsX(new double[] {})
+                    .withWheelForceFeedforwardsY(new double[] {}));
           }
         });
     PathPlannerLogging.setLogTargetPoseCallback(

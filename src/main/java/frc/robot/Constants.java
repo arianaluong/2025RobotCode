@@ -295,7 +295,7 @@ public class Constants {
   }
 
   public static class ElevatorConstants {
-    public static final double elevatorGearRatio = 1.0 / 6.0;
+    public static final double elevatorGearRatio = 6.0 / 1.0;
     public static final double sprocketDiameter = Units.inchesToMeters(1.75);
 
     public static final int elevatorMainMotorID = 21;
@@ -311,7 +311,7 @@ public class Constants {
     public static final double downHeight = Units.inchesToMeters(0);
 
     public static final double sensorToMechanismRatio =
-        elevatorGearRatio * Math.PI * sprocketDiameter;
+        elevatorGearRatio / (sprocketDiameter * Math.PI);
 
     public static final double bottomSpeed = 0.1;
 
@@ -337,7 +337,7 @@ public class Constants {
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign);
 
     public static final FeedbackConfigs feedbackConfigs =
-        new FeedbackConfigs().withSensorToMechanismRatio(1 / sensorToMechanismRatio);
+        new FeedbackConfigs().withSensorToMechanismRatio(sensorToMechanismRatio);
 
     public static final MotorOutputConfigs motorOutputConfigs =
         new MotorOutputConfigs()
