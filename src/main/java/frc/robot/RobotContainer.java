@@ -11,7 +11,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -22,15 +21,18 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.AlgaeRemoverConstants;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.commands.TurnToReef;
-import frc.robot.subsystems.AlgaeIntake;
+import frc.robot.subsystems.AlgaeRemover;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GroundIntake;
@@ -60,8 +62,8 @@ public class RobotContainer {
   @Logged(name = "Ground Intake")
   private final GroundIntake groundIntake = new GroundIntake();
 
-  @Logged(name = "Algae Intake")
-  private final AlgaeIntake algaeIntake = new AlgaeIntake();
+  @Logged(name = "Algae Remover")
+  private final AlgaeRemover algaeRemover = new AlgaeRemover();
 
   private final Telemetry logger =
       new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
@@ -85,7 +87,7 @@ public class RobotContainer {
 
   // Just put a bunch of instantcommands as placeholders for now
   Command outtakePrematch = new InstantCommand();
-  Command algaeIntakePrematch = new InstantCommand();
+  Command algaeRemoverPrematch = new InstantCommand();
   Command armPrematch = new InstantCommand();
   Command elevatorPrematch = new InstantCommand();
   Command groundIntakePrematch = groundIntake.buildPrematch();
@@ -97,7 +99,11 @@ public class RobotContainer {
     NamedCommands.registerCommand("Stop Indexer", indexer.stop().asProxy());
     NamedCommands.registerCommand(
         "Elevator: L4",
-        elevator.moveToPosition(ElevatorConstants.L4Height).withTimeout(4).asProxy());
+        elevator
+            .moveToPosition(ElevatorConstants.L4Height)
+            // .onlyIf(outtakeLaserBroken)
+            .withTimeout(4)
+            .asProxy());
     NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(3).asProxy());
     NamedCommands.registerCommand("Outtake", outtake.fastOuttake().withTimeout(1.5).asProxy());
     NamedCommands.registerCommand(
@@ -147,15 +153,15 @@ public class RobotContainer {
             },
             drivetrain));
 
-    driverController.b().whileTrue(drivetrain.applyRequest(() -> brake));
-    driverController
-        .a()
-        .whileTrue(
-            drivetrain.applyRequest(
-                () ->
-                    point.withModuleDirection(
-                        new Rotation2d(
-                            -driverController.getLeftY(), -driverController.getLeftX()))));
+    // driverController.square().whileTrue(drivetrain.applyRequest(() -> brake));
+    // driverController
+    //     .circle()
+    //     .whileTrue(
+    //         drivetrain.applyRequest(
+    //             () ->
+    //                 point.withModuleDirection(
+    //                     new Rotation2d(
+    //                         -driverController.getLeftY(), -driverController.getLeftX()))));
 
     // driverController.L1().whileTrue(drivetrain.ReefAlign(true));
     // driverController.R1().whileTrue(drivetrain.ReefAlign(false));
@@ -186,30 +192,65 @@ public class RobotContainer {
 
     // reset the field-centric heading on left bumper press
     driverController
-        .back()
-        .and(driverController.start())
+        .start()
+        .and(driverController.back())
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
     drivetrain.registerTelemetry(logger::telemeterize);
+    // driverController.triangle().onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+    // driverController.square().onTrue(elevator.moveToPosition(ElevatorConstants.L3Height));
+    // driverController.circle().onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
+    // driverController.cross().onTrue(elevator.downPosition());
   }
 
   private void configureElevatorBindings() {
     elevator.setDefaultCommand(elevator.holdPosition());
 
+    // operatorStick
+    //     .button(OperatorConstants.L4HeightButton)
+    //     .and(armMode.negate())
+    //     .onTrue(
+    //         elevator
+    //             .moveToPosition(ElevatorConstants.L4Height)
+    //             .andThen(elevator.upSpeed(.1).withTimeout(.25)));
+
     operatorStick
         .button(OperatorConstants.L4HeightButton)
-        .and(armMode.negate())
+        .and(armMode.negate().and(outtakeLaserBroken))
+        .or(
+            operatorStick
+                .button(OperatorConstants.elevatorOverrideButton)
+                .and(operatorStick.button(OperatorConstants.L4HeightButton))
+                .and(armMode.negate()))
         .onTrue(
             elevator
                 .moveToPosition(ElevatorConstants.L4Height)
                 .andThen(elevator.upSpeed(.1).withTimeout(.25)));
+
     operatorStick
         .button(OperatorConstants.L3HeightButton)
-        .and(armMode.negate())
+        .and(armMode.negate().and(outtakeLaserBroken))
+        .or(
+            operatorStick
+                .button(OperatorConstants.elevatorOverrideButton)
+                .and(operatorStick.button(OperatorConstants.L3HeightButton))
+                .and(armMode.negate()))
         .onTrue(elevator.moveToPosition(ElevatorConstants.L3Height));
+
+    // operatorStick
+    //     .button(OperatorConstants.L2HeightButton)
+    //     .and(armMode.negate())
+    //     .and(outtakeLaserBroken)
+    //     .onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
+
     operatorStick
         .button(OperatorConstants.L2HeightButton)
-        .and(armMode.negate())
+        .and(armMode.negate().and(outtakeLaserBroken))
+        .or(
+            operatorStick
+                .button(OperatorConstants.elevatorOverrideButton)
+                .and(operatorStick.button(OperatorConstants.L2HeightButton))
+                .and(armMode.negate()))
         .onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
 
     operatorStick
@@ -225,17 +266,30 @@ public class RobotContainer {
     operatorStick
         .button(OperatorConstants.elevatorManualDown)
         .and(armMode.negate())
-        .whileTrue(elevator.downSpeed(.05))
+        .whileTrue(elevator.downSpeed(0.1))
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
 
     operatorStick
         .button(OperatorConstants.elevatorManualUp)
         .and(armMode.negate())
-        .whileTrue(elevator.upSpeed(.1))
+        .whileTrue(elevator.upSpeed(0.1))
+        .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
+
+    operatorStick
+        .button(OperatorConstants.elevatorManualUp)
+        .and(armMode.negate().and(outtakeLaserBroken))
+        .or(
+            operatorStick
+                .button(OperatorConstants.elevatorOverrideButton)
+                .and(operatorStick.button(OperatorConstants.elevatorManualUp))
+                .and(armMode.negate()))
+        .whileTrue(elevator.upSpeed(0.1))
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
   }
 
   private void configureArmBindings() {
+    arm.setDefaultCommand(arm.moveToPosition(ArmConstants.armTopPosition));
+
     operatorStick
         .button(OperatorConstants.groundIntakeButton)
         .and(armMode)
@@ -251,10 +305,15 @@ public class RobotContainer {
     // Button to raise arm manual up
 
     // button to raise arm manual down
+    operatorStick
+        .button(OperatorConstants.armPickupHeightButton)
+        .and(armMode)
+        .onTrue(arm.moveToPosition(ArmConstants.armBottomPosition));
 
-    // arm to pick up button
-
-    // arm to L1 height button
+    operatorStick
+        .button(OperatorConstants.armL1HeightButton)
+        .and(armMode)
+        .onTrue(arm.moveToPosition(ArmConstants.armL1Position));
   }
 
   private void configureOuttakeBindings() {
@@ -285,19 +344,25 @@ public class RobotContainer {
         .onFalse(indexer.stop());
   }
 
-  private void configureAlgaeIntakeBindings() {
+  private void configureAlgaeRemoverBindings() {
+    algaeRemover.setDefaultCommand(algaeRemover.moveToPosition(AlgaeRemoverConstants.downPosition));
+
     operatorStick
-        .button(OperatorConstants.algaeIntakeUp)
-        .whileTrue(algaeIntake.run(algaeIntake::algaeIntakeUp))
-        .onFalse(algaeIntake.runOnce(algaeIntake::stopAlgaeIntake));
+        .button(OperatorConstants.algaeRemoverHighPosition)
+        .whileTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.horizontalPosition)
+        .alongWith(indexer.runIndexer())
+        .alongWith(elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight)));
+    
     operatorStick
-        .button(OperatorConstants.algaeIntakeDown)
-        .whileTrue(algaeIntake.run(algaeIntake::algaeIntakeDown))
-        .onFalse(algaeIntake.runOnce(algaeIntake::stopAlgaeIntake));
+        .button(OperatorConstants.algaeRemoverLowPosition)
+        .whileTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.horizontalPosition)
+        .alongWith(indexer.runIndexer())
+        .alongWith(elevator.moveToPosition(ElevatorConstants.AlgaeLowHeight)));
+ 
   }
 
   private void configureOperatorBindings() {
-    configureAlgaeIntakeBindings();
+    configureAlgaeRemoverBindings();
     configureArmBindings();
     configureElevatorBindings();
     configureIndexerBindings();
@@ -308,17 +373,10 @@ public class RobotContainer {
         .whileTrue(
             elevator
                 .downPosition()
-                .andThen(arm.armTop())
-                .andThen(
-                    Commands.sequence(
-                        algaeIntake.run(algaeIntake::algaeIntakeUp),
-                        Commands.waitSeconds(1.0),
-                        algaeIntake.runOnce(algaeIntake::stopAlgaeIntake))))
+                .alongWith(arm.moveToPosition(ArmConstants.armTopPosition)))
         .onFalse(
-            algaeIntake
-                .runOnce(algaeIntake::stopAlgaeIntake)
-                .andThen(elevator.runOnce(elevator::stopElevator))
-                .andThen(arm.runOnce(arm::stopArm)));
+                elevator.runOnce(elevator::stopElevator)
+                .alongWith(arm.runOnce(arm::stopArm)));
   }
 
   private void configureAutoChooser() {
