@@ -76,8 +76,19 @@ public class Arm extends ExpandedSubsystem {
     return run(() -> armMotor.set(speed));
   }
 
+  // public Command armBottom() {
+  //   return runOnce(
+  //       () ->
+  //           armPIDController.setReference(
+  //               -100, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
+  // }
 
-
+  // public Command armTop() {
+  //   return runOnce(
+  //       () ->
+  //           armPIDController.setReference(
+  //               100, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
+  // }
 
   public void stopArm() {
     armMotor.set(0);

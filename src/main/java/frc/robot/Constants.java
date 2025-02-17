@@ -21,7 +21,6 @@ import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -34,6 +33,9 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.Filesystem;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +56,6 @@ public class Constants {
         maxRotationalSpeed.div(rotationZeroToFull);
 
     public static final double centerToBumber = Units.inchesToMeters(18);
-
   }
 
   public static class AutoConstants {
@@ -115,8 +116,19 @@ public class Constants {
 
   // .890 7.415
   public static class FieldConstants {
-    public static AprilTagFieldLayout aprilTagLayout =
-        AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+    public static final String aprilTagJson = "2025-official-welded";
+    public static final Path aprilTagJsonPath =
+        Path.of(Filesystem.getDeployDirectory().getPath(), "apriltags", aprilTagJson + ".json");
+
+    public static AprilTagFieldLayout aprilTagLayout;
+
+    static {
+      try {
+        aprilTagLayout = new AprilTagFieldLayout(aprilTagJsonPath);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
 
     public static final Pose2d redStationLeft =
         new Pose2d(16.638, 0.645, Rotation2d.fromDegrees(0));
@@ -347,7 +359,7 @@ public class Constants {
 
     public static final double bottomSpeed = 0.1;
 
-    public static final LinearVelocity maxVelocity = MetersPerSecond.of(2.26 * 0.9); // 2.26*.9
+    public static final LinearVelocity maxVelocity = MetersPerSecond.of(2.26 * 0.95); // 2.26*.9
     public static final LinearAcceleration maxAcceleration =
         maxVelocity.div(Seconds.of(0.5)); // .25
 
@@ -392,10 +404,8 @@ public class Constants {
 
   public static class ArmConstants {
     public static final int armMotorID = 15;
-
-    public static final int armMaxVelocity = 50;//degrees/s
-    public static final int armMaxAcceleration = 100;//degrees/s^2
-
+    public static final int armMaxVelocity = 50; // degrees/s
+    public static final int armMaxAcceleration = 100; // degrees/s^2
 
     public static final int armCurrentLimit = 30;
 
@@ -403,15 +413,10 @@ public class Constants {
     public static final double armL1Position = 45;
     public static final double armBottomPosition = 0;
 
-
-
     public static final double downHeight = Units.inchesToMeters(0);
-
 
     public static final TrapezoidProfile.Constraints constraints =
         new TrapezoidProfile.Constraints(armMaxVelocity, armMaxAcceleration);
-    
-    
   }
 
   public static class OperatorConstants {

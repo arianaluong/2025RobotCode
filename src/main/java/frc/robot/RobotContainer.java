@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -32,6 +31,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.commands.TurnToReef;
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeRemover;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
@@ -345,6 +345,7 @@ public class RobotContainer {
         .whileTrue(
             algaeRemover
                 .moveToPosition(AlgaeRemoverConstants.horizontalPosition)
+                .alongWith(indexer.runIndexer())
                 .alongWith(outtake.fastOuttake())
                 .alongWith(elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight)));
 
@@ -353,9 +354,9 @@ public class RobotContainer {
         .whileTrue(
             algaeRemover
                 .moveToPosition(AlgaeRemoverConstants.horizontalPosition)
+                .alongWith(indexer.runIndexer())
                 .alongWith(outtake.fastOuttake())
                 .alongWith(elevator.moveToPosition(ElevatorConstants.AlgaeLowHeight)));
-
   }
 
   private void configureOperatorBindings() {
@@ -368,13 +369,8 @@ public class RobotContainer {
     operatorStick
         .button(OperatorConstants.startingConfigButton)
         .whileTrue(
-
-            elevator
-                .downPosition()
-                .alongWith(arm.moveToPosition(ArmConstants.armTopPosition)))
-        .onFalse(
-                elevator.runOnce(elevator::stopElevator)
-                .alongWith(arm.runOnce(arm::stopArm)));
+            elevator.downPosition().alongWith(arm.moveToPosition(ArmConstants.armTopPosition)))
+        .onFalse(elevator.runOnce(elevator::stopElevator).alongWith(arm.runOnce(arm::stopArm)));
   }
 
   private void configureAutoChooser() {
