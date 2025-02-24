@@ -12,24 +12,24 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.MiscellaneousConstants;
 import frc.robot.util.ExpandedSubsystem;
 import java.util.ArrayList;
 import java.util.List;
 
-@Logged
+@Logged(strategy = Strategy.OPT_IN)
 public class Indexer extends ExpandedSubsystem {
-  /** Creates a new Indexer. */
   private SparkMax indexerMotor;
-
-  private final double prematchDelay = 2.5;
 
   public List<Alert> indexerPrematchAlerts = new ArrayList<Alert>();
 
+  /** Creates a new Indexer. */
   public Indexer() {
     indexerMotor = new SparkMax(IntakeConstants.indexerMotorID, MotorType.kBrushless);
 
@@ -49,15 +49,15 @@ public class Indexer extends ExpandedSubsystem {
     return run(this::index);
   }
 
-  public Command outtakeIndexer() {
-    return run(this::outtake);
+  public Command reverseIndexer() {
+    return run(this::reverse);
   }
 
   public Command stop() {
     return runOnce(this::stopIndexer);
   }
 
-  public void outtake() {
+  public void reverse() {
     indexerMotor.set(-IntakeConstants.indexerMotorSpeed);
   }
 
@@ -71,7 +71,7 @@ public class Indexer extends ExpandedSubsystem {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Indexer Speed", indexerMotor.get());
+    SmartDashboard.putNumber("Indexer/Speed", indexerMotor.get());
   }
 
   @Override
@@ -88,22 +88,36 @@ public class Indexer extends ExpandedSubsystem {
               }
             }),
         // Checks Indexer Motor
+        Commands.parallel(
+            Commands.runOnce(
+                () -> {
+                  index();
+                }),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(indexerMotor.get()) <= 1e-4) {
+                        addError("Indexer Motor is not moving");
+                      } else {
+                        addInfo("Indexer Motor is moving");
+                        if (Math.abs(IntakeConstants.indexerMotorSpeed - indexerMotor.get())
+                            > 0.1) {
+                          addError("Indexer Motor is not at desired velocity");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Indexer Motor is at the desired velocity");
+                        }
+                      }
+                    }))),
+        Commands.runOnce(() -> stopIndexer()),
+        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
         Commands.runOnce(
             () -> {
-              index();
-            }),
-        Commands.waitSeconds(prematchDelay),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(indexerMotor.get()) <= 1e-4) {
-                if (indexerMotor.get() < IntakeConstants.indexerMotorSpeed - 0.1
-                    || indexerMotor.get() > IntakeConstants.indexerMotorSpeed + 0.1) {
-                  addError("Indexer Motor is not at desired velocity");
-                  // We just put a fake range for now; we'll update this later on
-                }
-                addError("Indexer Motor is not moving");
+              if (Math.abs(indexerMotor.get()) > 0.1) {
+                addError("Indexer Motor isn't stopping");
               } else {
-                addInfo("Indexer Motor is moving");
+                addInfo("Indexer Motor did stop");
               }
             }));
   }
