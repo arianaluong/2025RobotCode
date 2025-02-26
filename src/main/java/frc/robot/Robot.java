@@ -96,6 +96,8 @@ public class Robot extends TimedRobot {
 
     m_robotContainer = new RobotContainer();
 
+    // addPeriodic(outtake.outtakeLaserBroken(), .05, .05);
+
     double startupTimeSeconds = Timer.getFPGATimestamp() - startTime;
     DataLogManager.log("Startup Time (ms): " + startupTimeSeconds * 1000.0);
     PathfindingCommand.warmupCommand().schedule();

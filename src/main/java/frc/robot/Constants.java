@@ -64,8 +64,8 @@ public class Constants {
     public static final PIDConstants translationPID = new PIDConstants(3, 0.0, 0.0); // 5
     public static final PIDConstants rotationPID = new PIDConstants(3, 0.0, 0.0); // 1
 
-    public static final LinearVelocity autoMaxTranslationalSpeed = FeetPerSecond.of(18);
-    public static final AngularVelocity autoMaxRotationalSpeed = RotationsPerSecond.of(1.5);
+    public static final LinearVelocity autoMaxTranslationalSpeed = FeetPerSecond.of(15);
+    public static final AngularVelocity autoMaxRotationalSpeed = RotationsPerSecond.of(1.0);
 
     public static final LinearAcceleration autoMaxTransationalAcceleration =
         autoMaxTranslationalSpeed.div(SwerveConstants.translationZeroToFull);
@@ -81,8 +81,8 @@ public class Constants {
 
     public static final PathConstraints slowPathConstraints =
         new PathConstraints(
-            5,
-            5,
+            2,
+            3,
             autoMaxRotationalSpeed.in(RadiansPerSecond),
             autoMaxAngularAcceleration.in(RadiansPerSecondPerSecond));
   }
@@ -418,9 +418,9 @@ public class Constants {
 
     public static final int armCurrentLimit = 30;
 
-    public static final Rotation2d armTopPosition = Rotation2d.fromDegrees(0);
-    public static final Rotation2d armL1Position = Rotation2d.fromDegrees(0);
-    public static final Rotation2d armBottomPosition = Rotation2d.fromDegrees(0);
+    public static final Rotation2d armTopPosition = Rotation2d.fromDegrees(85);
+    public static final Rotation2d armL1Position = Rotation2d.fromDegrees(130);
+    public static final Rotation2d armBottomPosition = Rotation2d.fromDegrees(30);
 
     public static final double downHeight = Units.inchesToMeters(0);
 
