@@ -4,10 +4,12 @@
 
 package frc.robot;
 
-import au.grapplerobotics.CanBridge;
 import com.ctre.phoenix6.CANBus.CANBusStatus;
 import com.ctre.phoenix6.SignalLogger;
+import com.pathplanner.lib.commands.PathfindingCommand;
 import com.revrobotics.spark.SparkBase;
+import edu.wpi.first.epilogue.Epilogue;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.hal.can.CANStatus;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -18,22 +20,36 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.WPILibVersion;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.generated.TunerConstants;
+import frc.robot.Constants.AlgaeRemoverConstants;
+import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.OuttakeConstants;
 import frc.robot.util.LogUtil;
+import java.util.HashMap;
+import java.util.Map;
+
+// import org.littletonrobotics.urcl.URCL;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
+  @Logged(name = "Robot")
   private final RobotContainer m_robotContainer;
 
   public Robot() {
     double startTime = Timer.getFPGATimestamp();
 
-    CanBridge.runTCP();
+    // CanBridge.runTCP();
 
     DataLogManager.start();
-
     DriverStation.startDataLog(DataLogManager.getLog());
+
+    Epilogue.configure(
+        (config) -> {
+          config.root = "";
+          config.backend = config.backend.lazy();
+        });
+    Epilogue.bind(this);
 
     SignalLogger.start();
 
@@ -69,11 +85,22 @@ public class Robot extends TimedRobot {
         break;
     }
 
+    Map<Integer, String> motorAliases = new HashMap<>();
+    motorAliases.put(AlgaeRemoverConstants.algaeRemoverMotorID, "Algae Remover");
+    motorAliases.put(ArmConstants.armMotorID, "Arm");
+    motorAliases.put(IntakeConstants.groundIntakeMotorID, "Ground Intake");
+    motorAliases.put(IntakeConstants.indexerMotorID, "Indexer");
+    motorAliases.put(OuttakeConstants.outtakeMotorID, "Outtake");
+
+    // URCL.start(motorAliases);
+
     m_robotContainer = new RobotContainer();
+
+    addPeriodic(() -> m_robotContainer.stopIfBeamBroken(), .005, .005);
 
     double startupTimeSeconds = Timer.getFPGATimestamp() - startTime;
     DataLogManager.log("Startup Time (ms): " + startupTimeSeconds * 1000.0);
-    // PathfindingCommand.warmupCommand().schedule();
+    PathfindingCommand.warmupCommand().schedule();
   }
 
   @Override
@@ -82,7 +109,7 @@ public class Robot extends TimedRobot {
 
     CommandScheduler.getInstance().run();
 
-    CANBusStatus canStatus = TunerConstants.kCANBus.getStatus();
+    CANBusStatus canStatus = frc.robot.generated.TunerConstants.kCANBus.getStatus();
     CANStatus rioCanStatus = RobotController.getCANStatus();
 
     SmartDashboard.putNumber("CANivore/CAN Utilization %", canStatus.BusUtilization * 100.0);

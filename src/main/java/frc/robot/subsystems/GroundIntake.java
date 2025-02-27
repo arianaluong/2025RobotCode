@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import au.grapplerobotics.LaserCan;
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -12,22 +11,22 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.util.ExpandedSubsystem;
 
+@Logged(strategy = Strategy.OPT_IN)
 public class GroundIntake extends ExpandedSubsystem {
-  /** Creates a new GroundIntake. */
   private SparkMax groundIntakeMotor;
 
   private final double prematchDelay = 2.5;
 
-  private LaserCan intakeLaser;
-
+  /** Creates a new GroundIntake. */
   public GroundIntake() {
     groundIntakeMotor = new SparkMax(IntakeConstants.groundIntakeMotorID, MotorType.kBrushless);
-    intakeLaser = new LaserCan(IntakeConstants.intakeLaserCanID);
 
     SparkMaxConfig groundIntakeConfig = new SparkMaxConfig();
 
@@ -41,35 +40,16 @@ public class GroundIntake extends ExpandedSubsystem {
         groundIntakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public boolean intakeLaserBroken() {
-    LaserCan.Measurement measurement = intakeLaser.getMeasurement();
-    if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-      // System.out.println("The target is " + measurement.distance_mm + "mm away!");
-      // if (measurement.distance_mm < 500) {
-      //   return true;
-      // } else {
-      //   return false;
-      // }
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   public void stopGroundIntake() {
     groundIntakeMotor.set(0);
   }
 
   public void groundIntake() {
-    if (!intakeLaserBroken()) {
-      groundIntakeMotor.set(IntakeConstants.groundIntakeMotorSpeed);
-    } else {
-      stopGroundIntake();
-    }
+    groundIntakeMotor.set(IntakeConstants.groundIntakeMotorSpeed);
   }
 
   public Command runIntake() {
-    return run(this::groundIntake);
+    return run(this::groundIntake).withName("Ground Intake");
   }
 
   public Command stop() {
@@ -97,29 +77,43 @@ public class GroundIntake extends ExpandedSubsystem {
             () -> {
               REVLibError error = groundIntakeMotor.getLastError();
               if (error != REVLibError.kOk) {
-                addError("Intake motor error: " + error.name());
+                addError("Ground Intake motor error: " + error.name());
               } else {
-                addInfo("Intake motor contains no errors");
+                addInfo("Ground Intake motor contains no errors");
               }
             }),
-
+        Commands.parallel(
+            Commands.runOnce(
+                () -> {
+                  groundIntake();
+                }),
+            Commands.sequence(
+                Commands.waitSeconds(prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(groundIntakeMotor.get()) <= 1e-4) {
+                        addError("Ground Intake Motor is not moving");
+                      } else {
+                        addInfo("Ground Intake Motor is moving");
+                        if ((Math.abs(IntakeConstants.groundIntakeMotorSpeed)
+                                - groundIntakeMotor.get())
+                            > 0.1) {
+                          addError("Ground Intake Motor is not at desired velocity");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Ground Intake Motor is at the desired velocity");
+                        }
+                      }
+                    }))),
         // Checks Ground Intake Motor
-        Commands.runOnce(
-            () -> {
-              groundIntake();
-            }),
+        stop(),
         Commands.waitSeconds(prematchDelay),
         Commands.runOnce(
             () -> {
-              if (Math.abs(groundIntakeMotor.get()) <= 1e-4) {
-                if (groundIntakeMotor.get() < IntakeConstants.groundIntakeMotorSpeed - 0.1
-                    || groundIntakeMotor.get() > IntakeConstants.groundIntakeMotorSpeed + 0.1) {
-                  addError("Indexer Motor is not at desired velocity");
-                  // We just put a fake range for now; we'll update this later on
-                }
-                addError("Indexer Motor is not moving");
+              if (groundIntakeMotor.get() > 0.1) {
+                addError("Ground Intake Motor is not stopping");
               } else {
-                addInfo("Indexer Motor is moving");
+                addInfo("Ground Intake Motor Stopped");
               }
             }));
   }
