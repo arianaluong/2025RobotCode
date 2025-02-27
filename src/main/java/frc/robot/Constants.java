@@ -57,12 +57,12 @@ public class Constants {
     public static final AngularAcceleration maxAngularAcceleration =
         maxRotationalSpeed.div(rotationZeroToFull);
 
-    public static final double centerToBumber = Units.inchesToMeters(18);
+    public static final double centerToBumber = Units.inchesToMeters(19);
   }
 
   public static class AutoConstants {
-    public static final PIDConstants translationPID = new PIDConstants(3, 0.0, 0.0); // 5
-    public static final PIDConstants rotationPID = new PIDConstants(3, 0.0, 0.0); // 1
+    public static final PIDConstants translationPID = new PIDConstants(2.2, 0.0, 0.0); // 5
+    public static final PIDConstants rotationPID = new PIDConstants(2.8, 0.0, 0.0); // 1
 
     public static final LinearVelocity autoMaxTranslationalSpeed = FeetPerSecond.of(15);
     public static final AngularVelocity autoMaxRotationalSpeed = RotationsPerSecond.of(1.0);
@@ -79,12 +79,7 @@ public class Constants {
             autoMaxRotationalSpeed.in(RadiansPerSecond),
             autoMaxAngularAcceleration.in(RadiansPerSecondPerSecond));
 
-    public static final PathConstraints slowPathConstraints =
-        new PathConstraints(
-            2,
-            3,
-            autoMaxRotationalSpeed.in(RadiansPerSecond),
-            autoMaxAngularAcceleration.in(RadiansPerSecondPerSecond));
+    public static final PathConstraints slowPathConstraints = new PathConstraints(1.5, 2, .55, .75);
   }
 
   public static class VisionConstants {
@@ -109,9 +104,9 @@ public class Constants {
 
     public static final Transform3d arducamFrontTransform =
         new Transform3d(
-            Units.inchesToMeters(13.479863),
+            Units.inchesToMeters(13.8),
             Units.inchesToMeters(-0.115166),
-            Units.inchesToMeters(7.908),
+            Units.inchesToMeters(8.09),
             new Rotation3d(0.0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
 
     public static final Transform2d arducamFrontTransform2d =
